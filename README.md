@@ -2,7 +2,6 @@
 
 Static site for willwelast.app. No build step.
 
-- `index.html` — landing page
-- `calculator.html` — the calculator (served at /calculator on Cloudflare Pages)
-
-Deploy: Cloudflare Pages → connect this repo → framework preset "None", build command empty, output directory `/`.
+- `public/index.html` — landing page
+- `public/calculator.html` — the calculator (served at /calculator)
+- `wrangler.jsonc` — Cloudflare Workers static-assets config; Cloudflare runs `npx wrangler deploy` on every push to `main`

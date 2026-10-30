@@ -1,0 +1,9 @@
+{
+  "name": "will-we-last",
+  "compatibility_date": "2026-10-01",
+  // Static site: everything in public/ is served as-is; /calculator serves calculator.html
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash"
+  }
+}
