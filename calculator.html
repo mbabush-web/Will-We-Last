@@ -1,0 +1,669 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Will We Last</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a survey "codebook" form on the left, a sticky life-table readout on the right. */
+:root {
+  --bg: #f3f4f6;
+  --panel: #ffffff;
+  --ink: #18202c;
+  --muted: #5b6575;
+  --line: #d9dde4;
+  --accent: #27548a;
+  --accent-soft: #e3ebf5;
+  --risk: #a3366d;
+  --risk-soft: #f6e4ee;
+  --good: #2c7a55;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161d; --panel: #1a2029; --ink: #e8ebf0; --muted: #9aa4b3; --line: #2c3442;
+    --accent: #8db4e6; --accent-soft: #1f2d40; --risk: #e486b6; --risk-soft: #3a2030; --good: #74c79d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161d; --panel: #1a2029; --ink: #e8ebf0; --muted: #9aa4b3; --line: #2c3442;
+  --accent: #8db4e6; --accent-soft: #1f2d40; --risk: #e486b6; --risk-soft: #3a2030; --good: #74c79d;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+}
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 64ch; margin: 0; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 28px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } .readout { position: static !important; order: -1; } }
+
+form { display: grid; gap: 18px; }
+fieldset { border: 1px solid var(--line); background: var(--panel); border-radius: 10px; padding: 16px 18px 18px; margin: 0; display: grid; gap: 16px; min-width: 0; }
+legend { font-family: var(--display); font-weight: 700; font-size: 17px; padding: 0 6px; margin-left: -6px; }
+.q { display: grid; gap: 7px; min-width: 0; }
+.q > label, .q > .qlabel { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.q .val { font-family: var(--mono); font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hint { color: var(--muted); font-size: 12.5px; margin: -3px 0 0; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.sel { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; max-width: 100%; }
+.seg label { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; cursor: pointer; background: var(--bg); color: var(--ink); user-select: none; }
+.seg input:checked + label { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+.readout { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 16px; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.big { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat { display: grid; gap: 2px; padding: 12px 14px; border-radius: 8px; background: var(--risk-soft); }
+.stat .k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.stat .v { font-family: var(--display); font-weight: 700; font-size: 44px; line-height: 1; color: var(--risk); font-variant-numeric: tabular-nums; }
+.stat .s { font-size: 12.5px; color: var(--muted); }
+.compare { font-size: 13.5px; color: var(--muted); margin: 0; }
+.compare b { color: var(--ink); font-weight: 600; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 17px; margin: 0; }
+svg text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 18px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: middle; background: var(--sw); }
+.levers { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.levers li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: baseline; font-size: 13.5px; border-top: 1px solid var(--line); padding-top: 8px; }
+.levers .d { font-family: var(--mono); color: var(--good); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.levers .none { color: var(--muted); }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; }
+.notes p, .notes li { color: var(--muted); font-size: 14px; max-width: 65ch; }
+.notes ul { padding-left: 18px; margin: 0; display: grid; gap: 6px; }
+.notes p { margin: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 5px 6px; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+th { font-family: var(--mono); font-weight: 500; font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.tablewrap { overflow-x: auto; }
+@media (prefers-reduced-motion: no-preference) { .stat .v { transition: color .2s; } }
+.modes { display: inline-flex; width: fit-content; justify-self: start; align-self: start; gap: 0; margin-top: 14px; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--bg); max-width: 100%; }
+.modes.sub { margin-top: 8px; margin-left: 10px; }
+.modes.sub button { font-size: 13px; padding: 5px 12px; }
+.modes button { font: inherit; font-size: 14px; font-weight: 600; border: 0; border-radius: 999px; padding: 7px 16px; background: transparent; color: var(--muted); cursor: pointer; }
+.modes button[aria-selected="true"] { background: var(--accent); color: var(--panel); }
+.modes button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.stagepick { display: grid; justify-items: start; }
+header .lede { max-width: none; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Will We Last · NLSY97, NLSY79, HCMST &amp; NSFG · 17,363 marriages · 11,382 live-in couples · 5,871 couples followed 2009–2022</div>
+    <h1>Will we last?</h1>
+    <p class="lede">Will your relationship last, and for how long? This calculator was built to estimate both. It isn't a personality quiz: every number comes from what actually happened to more than 34,000 real couples (married, living together and dating) whom US government and university surveys followed for up to 25 years.</p>
+    <p class="lede" style="margin-top:.6em">We trained statistical survival models on those histories, checked them on couples the models had never seen, and tested them against a separate generation of marriages. Pick where you are now, answer a few questions about your background, and see the chance of splitting up over the coming years. Change any answer to see what moves the number.</p>
+    <div class="stagepick">
+    <div class="modes" role="tablist" aria-label="Where you are now">
+      <button type="button" role="tab" aria-selected="false" data-stage="D">Dating</button>
+      <button type="button" role="tab" aria-selected="false" data-stage="C">Living together</button>
+      <button type="button" role="tab" aria-selected="true" data-stage="A">Engaged</button>
+      <button type="button" role="tab" aria-selected="false" data-stage="B">Married</button>
+    </div>
+    </div>
+  </header>
+
+  <div class="main">
+    <form id="f" autocomplete="off">
+      <fieldset data-show="A">
+        <legend>Marrying when?</legend>
+        <p class="hint">Engaged or planning to marry: this is the chance of divorce counted from the wedding, assuming it goes ahead. It doesn't cover calling off the engagement. Pick an earlier era to see how couples who married then fared.</p>
+        <div class="q"><div class="seg" id="gen"></div>
+          <p class="hint" id="gen-hint"></p></div>
+      </fieldset>
+
+      <fieldset data-show="D">
+        <legend>Your relationship now</legend>
+        <p class="hint">Built from 5,871 couples in the How Couples Meet and Stay Together surveys, asked in 2009 or 2017 and followed for five to eight years. Dating here means a partner you don't live with.</p>
+        <div class="q"><div class="qlabel">How long you've been together <span class="val" id="dyrs-v" hidden></span></div><div class="seg" id="dyrsk"></div>
+          <input type="hidden" id="dyrs" value="1"></div>
+        <div class="q"><label for="dage">Your age <span class="val" id="dage-v"></span></label>
+          <input type="range" id="dage" min="18" max="75" step="1" value="28"></div>
+        <div class="q"><div class="qlabel">How would you describe the relationship?</div><div class="seg" id="qual"></div></div>
+        <div class="q"><div class="qlabel">Met online?</div><div class="seg" id="online"></div></div>
+        <div class="q"><div class="qlabel">Same-sex couple?</div><div class="seg" id="samesex"></div></div>
+        <div class="q"><div class="qlabel">Children living with you?</div><div class="seg" id="dkids"></div></div>
+      </fieldset>
+
+      <fieldset data-show="C">
+        <legend>Living together now</legend>
+        <p class="hint">Built from 11,382 NLSY97 couples who moved in together without marrying first (people born 1980–84, move-ins from 1994 to 2024). Marrying each other doesn't count as an ending, and neither does a break of under a year before moving back in; a later divorce does. Lowered after the first year to match recent couples in the NSFG.</p>
+        <div class="q"><div class="qlabel">How long you've lived together <span class="val" id="cyrs-v" hidden></span></div><div class="seg" id="cyrsk"></div>
+          <input type="hidden" id="cyrs" value="0"></div>
+      </fieldset>
+
+      <fieldset data-show="B">
+        <legend>Your marriage now</legend>
+        <p class="hint">Built from couples who answered these questions in their first years of marriage, between 2000 and 2008. Past 5 years married, the estimate switches to the wedding-day model counted from today, and these answers shift it by the same amount as in early marriage. Scales run 0 to 10.</p>
+        <div class="q"><div class="qlabel">How long you've been married <span class="val" id="ym-v" hidden></span></div><div class="seg" id="ymk"></div>
+          <input type="hidden" id="ym" value="1"></div>
+        <div class="q"><label for="close">How close you feel to your spouse <span class="val" id="close-v"></span></label>
+          <input type="range" id="close" min="0" max="10" step="1" value="9"><div class="scale"><span>not close</span><span>very close</span></div></div>
+        <div class="q"><label for="cares">How much your spouse cares about you <span class="val" id="cares-v"></span></label>
+          <input type="range" id="cares" min="0" max="10" step="1" value="10"><div class="scale"><span>not at all</span><span>a great deal</span></div></div>
+        <div class="q"><label for="conflict">How much conflict there is <span class="val" id="conflict-v"></span></label>
+          <input type="range" id="conflict" min="0" max="10" step="1" value="3"><div class="scale"><span>none</span><span>a lot</span></div></div>
+        <div class="q"><div class="qlabel">How committed you are <span class="val" id="commit-v"></span></div>
+          <div class="seg" id="commitk"></div>
+          <input type="range" id="commit" min="0" max="10" step="1" value="10" aria-label="Commitment"></div>
+        <div class="q"><div class="qlabel">Living with your spouse right now?</div><div class="seg" id="together"></div></div>
+        <div class="q"><label for="rw">Your yearly earnings <span class="val" id="rw-v"></span></label>
+          <input type="range" id="rw" min="0" max="150" step="5" value="45"></div>
+        <div class="q"><label for="sw">Your spouse's yearly earnings <span class="val" id="sw-v"></span></label>
+          <input type="range" id="sw" min="0" max="150" step="5" value="50"></div>
+        <div class="q"><div class="qlabel">Use the earnings answers?</div><div class="seg" id="earnk"></div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend id="you-legend">You, on your wedding day</legend>
+        <div class="q"><div class="qlabel">Sex</div><div class="seg" id="sex"></div></div>
+        <div class="q" data-show="A B C">
+          <label for="age"><span id="age-l">Age at the wedding</span> <span class="val" id="age-v"></span></label>
+          <input type="range" id="age" min="18" max="45" step="1" value="28">
+          <div class="scale" data-show="A C"><span>18</span><span>25</span><span>35</span><span>45</span></div>
+          <div class="scale" data-show="B" hidden><span>18</span><span>23</span><span>28</span></div>
+        </div>
+        <div class="q"><div class="qlabel">Highest degree</div><div class="seg" id="edu"></div></div>
+        <div class="q"><div class="qlabel">Married before?</div><div class="seg" id="order"></div></div>
+        <div class="q" data-show="A B C"><div class="qlabel">Children already born</div><div class="seg" id="kids"></div></div>
+        <div class="q" data-show="A B C"><div class="qlabel" id="preg-l">Expecting a baby at the wedding?</div><div class="seg" id="preg"></div></div>
+        <div class="q" data-show="A B C"><div class="qlabel">How often you attend religious services</div><div class="seg" id="attend"></div></div>
+        <div class="q" data-show="A"><label for="wage">Your earnings the year before the wedding <span class="val" id="wage-v"></span></label>
+          <input type="range" id="wage" min="0" max="150" step="5" value="40">
+          <div class="scale"><span>$0</span><span>$75k</span><span>$150k+</span></div>
+          <p class="hint">In today's dollars. Earnings barely moved the odds unless they were zero.</p></div>
+      </fieldset>
+
+      <fieldset data-show="A B">
+        <legend>Your spouse</legend>
+        <div class="q">
+          <label for="gap">Age difference <span class="val" id="gap-v"></span></label>
+          <input type="range" id="gap" min="-15" max="15" step="1" value="2">
+          <div class="scale"><span>15 younger</span><span>same age</span><span>15 older</span></div>
+        </div>
+        <div class="q"><div class="qlabel">Spouse's schooling</div><div class="seg" id="spedu"></div></div>
+      </fieldset>
+
+      <fieldset data-show="A B C">
+        <legend>Your relationship history</legend>
+        <div class="q" data-show="A B"><div class="qlabel">How long you lived together before the wedding</div><div class="seg" id="cohab"></div></div>
+        <div class="q"><div class="qlabel" id="prior-l">Earlier live-in partners (not this spouse)</div><div class="seg" id="prior"></div></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Background</legend>
+        <div class="q" data-show="A B C"><div class="qlabel">Lived with both biological parents growing up?</div><div class="seg" id="bothpar"></div></div>
+        <div class="q" data-show="A B C"><div class="qlabel">Your mother's schooling</div><div class="seg" id="mom"></div></div>
+        <div class="q"><div class="qlabel">Race and ethnicity</div><div class="seg" id="race"></div>
+          <p class="hint">"Prefer not to say" uses the survey average.</p></div>
+        <div class="q" data-show="A B C"><label for="usstate">State you live in</label><select id="usstate" class="sel"><option value="">Prefer not to say</option><option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="DC">District of Columbia</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option></select></div>
+      </fieldset>
+    </form>
+
+    <aside class="readout" aria-live="polite">
+      <div class="card">
+        <div class="big">
+          <div class="stat"><span class="k" id="k5">Within 5 years</span><span class="v" id="r5">–</span><span class="s" id="r5s"></span></div>
+          <div class="stat"><span class="k" id="k10">Within 10 years</span><span class="v" id="r10">–</span><span class="s" id="r10s"></span></div>
+        </div>
+        <p class="compare" id="cmp"></p>
+        <p class="compare" id="half"></p>
+        <svg id="chart" viewBox="0 0 400 210" width="100%" role="img" aria-label="Chance the relationship has ended, by years"></svg>
+        <div class="legend"><span style="--sw: var(--risk)" id="this-label">This marriage</span><span style="--sw: var(--muted)" id="avg-label">Average marriage</span></div>
+        <p class="hint" id="basis"></p>
+      </div>
+      <div class="card">
+        <h2>Biggest what-ifs</h2>
+        <ul class="levers" id="levers"></ul>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card">
+    <h2>How far to trust it</h2>
+    <div class="notes">
+      <div style="display:grid; gap:10px; min-width:0">
+        <p><b>Calibration.</b> When a model says 20%, about 20% of those couples split up. Each dot is a tenth of couples sorted by risk (a fifth for dating), using predictions from 5-fold cross-validation (the model never saw those people) and Kaplan–Meier for what happened.</p>
+        <div class="seg" id="calibk"></div>
+        <svg id="calib" viewBox="0 0 360 240" width="100%" role="img" aria-label="Predicted versus observed risk"></svg>
+        <div class="legend" id="calib-legend"><span style="--sw: var(--accent)">5 years</span><span style="--sw: var(--risk)">10 years</span></div>
+      </div>
+      <div style="display:grid; gap:10px; min-width:0">
+        <div class="tablewrap"><table id="mt"></table></div>
+        <ul>
+          <li><b>Dating is the roughest estimate.</b> About 680 couples who were dating when first asked, in 2009 or 2017, so the ranking (concordance 0.64) is decent but the high and low ends are shakier than for marriages. About 6 in 10 had split up within five years. How the relationship felt at the start mattered most: "fair or poor" went with about five times the yearly odds of "excellent".</li>
+          <li><b>Living together splits sooner, then settles.</b> Of NLSY97 couples who moved in together, 22% split within a year and 53% within five; by five years, most of the couples still together had married each other. Earlier live-in partners raised the odds (1.6 times for two or more); a bachelor's degree lowered them. In the national NSFG survey, couples who moved in since 2010 split as often in the first year as 2000s couples but less often after that (0.79 times the yearly odds), so the model is lowered after the first year.</li>
+          <li><b>It ranks couples modestly.</b> A concordance near 0.65 means the model gives the higher risk to the marriage that ended first about 65% of the time. Most of what ends a marriage isn't in these questions.</li>
+          <li><b>Marrying now is the default for weddings.</b> Divorce keeps falling. In the national NSFG survey, 21.7% of women's first marriages from the 2010s ended within 10 years, against 30.7% for 2000s weddings and 40.0% for 1980s weddings. Comparing like with like, recent weddings have about three quarters the odds, so this setting lowers the NLSY97 model by that much for the share of its weddings that came before 2010.</li>
+          <li><b>Pick your generation.</b> Marriages of people born around 1960 broke up less often, and remarriages in that generation were barely riskier than first marriages. The NLSY97 model overstated their odds by 10 to 20 points, so the 1960 setting uses a model fit on NLSY79.</li>
+          <li><b>The 1960 setting only knows the background questions.</b> NLSY79 didn't ask about living together, religious services, earlier partners or the spouse in the same way, so those answers borrow the NLSY97 effects and are centered so they don't shift the average.</li>
+          <li><b>Earnings did almost nothing.</b> Adding earnings didn't improve the wedding-day model; only having no earnings at all raised the odds a little. A wife earning more than her husband looked riskier in NLSY97, but in 7,115 PSID couples it made no difference once his pay was known. A low-earning husband is the signal, not a high-earning wife.</li>
+          <li><b>Personality and test scores added nothing.</b> The Big Five, self-esteem, locus of control and aptitude scores barely moved the concordance. The one new signal was a spouse with children from another relationship, which went with about 1.6 times the odds.</li>
+          <li><b>How the marriage feels says less than you'd think.</b> Closeness, care, conflict and commitment, asked early in the marriage, raised the concordance only from 0.65 to 0.66. Not living with your spouse was the strongest current sign.</li>
+          <li><b>"Divorce" includes legal separation</b> in NLSY97, dated to when it began. NLSY79 dates the end of the marriage as reported.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const DATA = {"models":{"A":{"intercept":-3.533272174401581,"coefs":{"dur":0.17837414796462253,"dur_h1":0.1713726032941189,"dur_h2":-0.39572696430355636,"dur_h4":-0.009632380230096587,"dur_h7":0.0010089942348990247,"dur_h12":0.01203395339813848,"female":0.019374374229235505,"black":0.1696001635761085,"hispanic":-0.060567967204111804,"mixed":0.5667466097858109,"age":-0.02533756163075594,"age_h20":-0.023162240625858758,"age_h23":-0.01963302336362566,"age_h26":0.0029767881207987865,"age_h30":0.05971819999626477,"age_h35":0.060517369670931485,"remarriage":0.4208803863754613,"edu_none":0.08740721157759265,"edu_aa":-0.022661261860037325,"edu_ba":-0.44716019972326576,"kids_1":0.16040303862864602,"kids_2p":0.17828696152500176,"not_both_par":0.1593970208338491,"mom_lt12":0.023150190015450732,"mom_somecol":0.012998535877858377,"mom_ba":-0.06926263117301383,"mom_unk":0.08543600927657777,"cohab_spouse":-0.03031519554243352,"prior_cohab_1":0.28679703643802834,"prior_cohab_2p":0.4711112283191078,"preg_at_wedding":-0.029417705056742884,"attend_never":0.07061213028661002,"attend_monthly":-0.07704695756885394,"attend_weekly":-0.14028980156186546,"south":0.19209410608061167,"wages_unk":0.0025764553956859945,"wages_none":0.15528544307578293,"wages":-0.0023218027069516743,"wages_h15":-0.002012160092569193,"wages_h40":-0.00034580934975630734,"wages_h75":0.0038817907749629844},"shrinkage":0.9512390441211824,"spouse_coefs":{"gap_older_spouse":0.008164490186382042,"gap_younger_spouse":0.006645762675578826,"sp_lt12":-0.025140062415864903,"sp_somecol":-0.08155802905595234,"sp_ba":-0.2335557185775787},"spouse_means":{"gap_older_spouse":0.7503485959647571,"gap_younger_spouse":0.3241581673442185,"sp_lt12":0.10481059725772716,"sp_somecol":0.26782745490623716,"sp_ba":0.298843382970736},"baseline_profile":{"female":0.5332601192343898,"black":0.1832444304989018,"hispanic":0.2165045497332915,"mixed":0.010825227486664575,"age":1.6282031536102295,"age_h20":7.729238033294678,"age_h23":5.225564956665039,"age_h26":3.274761915206909,"age_h30":1.5216374397277832,"age_h35":0.40245530009269714,"remarriage":0.17163476623784124,"edu_none":0.115625980545968,"edu_aa":0.06385315343583307,"edu_ba":0.23878255412613744,"kids_1":0.2020709130844054,"kids_2p":0.21885786005647945,"not_both_par":0.5006275494195168,"mom_lt12":0.21399435205522435,"mom_somecol":0.21509256353937872,"mom_ba":0.15971132726702228,"mom_unk":0.0767179165359272,"cohab_spouse":0.6677125823658613,"prior_cohab_1":0.23313460935048635,"prior_cohab_2p":0.10982114841543772,"preg_at_wedding":0.10684028867273297,"attend_never":0.3131471603388767,"attend_monthly":0.14637590210229057,"attend_weekly":0.19203012237213682,"south":0.41104486978349547,"wages_unk":0.031848133040476935,"wages_none":0.005961719485409476,"wages":36.92452513438948,"wages_h15":24.75036745196093,"wages_h40":11.341140678795151,"wages_h75":3.5540758372322703}},"A60":{"intercept":-4.076710266783989,"coefs":{"dur":0.5938457491816482,"dur_h1":-0.20574658280942326,"dur_h2":-0.40155132465859505,"dur_h4":-0.06838651533882982,"dur_h7":0.0302162091191313,"dur_h12":-0.009768316943833042,"female":0.015407904185256425,"black":0.016601648163473797,"hispanic":-0.1452248114002613,"mixed":0.0,"age":-0.025051585128946775,"age_h20":-0.018175070181077422,"age_h23":-0.0005878201473302018,"age_h26":0.007944939298506504,"age_h30":0.005176940455097984,"age_h35":-2.4766521560232238e-05,"remarriage":0.3206701567172594,"edu_none":0.09021038152698488,"edu_aa":-0.1793867213173506,"edu_ba":-0.40853487533786276,"kids_1":0.14822850963380635,"kids_2p":0.17323420444265333,"not_both_par":0.1757435811247882,"mom_lt12":-0.11496645205620111,"mom_somecol":-0.03567383488984106,"mom_ba":-0.0011320164386830539,"mom_unk":-0.12686477368754695},"shrinkage":1.0304686835075945,"baseline_profile":{"female":0.5335335335335335,"black":0.24333424333424333,"hispanic":0.1941031941031941,"mixed":0.0,"age":2.2388675212860107,"age_h20":8.474937438964844,"age_h23":6.2001776695251465,"age_h26":4.467535495758057,"age_h30":2.8049566745758057,"age_h35":1.418744444847107,"remarriage":0.2945672945672946,"edu_none":0.19783419783419784,"edu_aa":0.13031213031213032,"edu_ba":0.14596414596414597,"kids_1":0.16452816452816452,"kids_2p":0.21794521794521796,"not_both_par":0.3063063063063063,"mom_lt12":0.3952133952133952,"mom_somecol":0.08262808262808263,"mom_ba":0.06806806806806807,"mom_unk":0.06060606060606061},"n_marriages":10989,"n_people":7752},"B":{"intercept":-3.7369965436325008,"coefs":{"dur":0.47208601042173387,"dur_h1":-0.28399393753936775,"dur_h2":-0.31265888521142915,"dur_h4":0.07354240434940834,"dur_h7":0.025390293203600298,"dur_h12":-0.026786025540155595,"female":0.021770780183147848,"black":0.11622768035317858,"hispanic":-0.10868137583354845,"mixed":0.30701919605169986,"age":-0.03961217392188505,"age_h20":-0.02423017362490994,"age_h23":-0.0653622609011308,"age_h26":0.06631102230176521,"age_h30":0.0,"age_h35":0.0,"remarriage":0.5905879429421936,"edu_none":0.026806095663496003,"edu_aa":0.0787611901638697,"edu_ba":-0.2098585532963837,"kids_1":0.048518864433737034,"kids_2p":0.011207484761042847,"not_both_par":0.15173610284868644,"mom_lt12":0.023811898052212,"mom_somecol":0.0370590065395272,"mom_ba":-0.005726953463793361,"mom_unk":0.027711375611423502,"cohab_spouse":0.136984851378416,"prior_cohab_1":0.31054607257209194,"prior_cohab_2p":0.4336690199917372,"preg_at_wedding":-0.052223997042408474,"attend_never":0.10293237946144432,"attend_monthly":0.0023618215322922347,"attend_weekly":-0.10522622653572548,"south":0.16867239669006992,"yrs_married":-0.04074330941948025,"close_lt10":0.05176096770400848,"close_lt8":0.019595428575383992,"cares_lt10":0.044791697284916714,"cares_lt8":-0.04043483850031037,"conflict":0.03645169715903516,"conflict_h5":-0.030561464661187906,"commit_unk":-0.021877480148857105,"commit_lt10":-0.011326043224381946,"gap_older_spouse":0.005094816860734941,"gap_younger_spouse":0.03603243850120331,"sp_lt12":0.0739467302148471,"sp_somecol":-0.0553197854497538,"sp_ba":-0.4594984075379834,"sp_unk":0.6027064707449283,"wife_share":0.5181152884995582,"wife_share_h50":-0.3103991092137432,"share_unk":-0.03672326837402702,"hh_wages":-0.0008460393743762121,"hh_wages_h40":-0.0016109507548011206,"hh_wages_h100":0.002095374319435296},"shrinkage":0.9693265653612636,"baseline_profile":{"female":0.568,"black":0.14472727272727273,"hispanic":0.24,"mixed":0.009454545454545455,"age":-3.3631818294525146,"age_h20":2.84745454788208,"age_h23":0.9059393405914307,"age_h26":0.10421213507652283,"age_h30":0.0,"age_h35":0.0,"remarriage":0.04981818181818182,"edu_none":0.14909090909090908,"edu_aa":0.046181818181818185,"edu_ba":0.14145454545454544,"kids_1":0.21236363636363637,"kids_2p":0.11090909090909092,"not_both_par":0.5018181818181818,"mom_lt12":0.23018181818181818,"mom_somecol":0.2109090909090909,"mom_ba":0.13672727272727273,"mom_unk":0.07890909090909091,"cohab_spouse":0.5974545454545455,"prior_cohab_1":0.14436363636363636,"prior_cohab_2p":0.032363636363636365,"preg_at_wedding":0.1501818181818182,"attend_never":0.25672727272727275,"attend_monthly":0.14545454545454545,"attend_weekly":0.22945454545454547,"south":0.4127272727272727,"yrs_married":0.659636378288269,"close_lt10":0.5221818089485168,"close_lt8":0.1483636349439621,"cares_lt10":0.3494545519351959,"cares_lt8":0.10363636165857315,"conflict":3.037454605102539,"conflict_h5":0.5352727174758911,"commit_unk":0.468,"commit_lt10":0.16436363636363635,"gap_older_spouse":0.7361515194285999,"gap_younger_spouse":0.1473636370572177,"sp_lt12":0.13490909090909092,"sp_somecol":0.256,"sp_ba":0.17454545454545456,"sp_unk":0.07163636363636364,"wife_share":-0.05596994088003276,"wife_share_h50":0.016310727046674446,"share_unk":0.46145454545454545,"hh_wages":36.911595091952734,"hh_wages_h40":17.50957691860992,"hh_wages_h100":3.8991689682226007},"n_marriages":2750,"n_events":1318},"knots":{"age":[20,23,26,30,35],"gap":[-6,-2,2,6],"dur":[1,2,4,7,12],"inc":[15,40,75]},"C":{"intercept":-1.5380064579294273,"coefs":{"dur":-0.32856791748962155,"dur_h1":0.018521887450341792,"dur_h2":0.101207374593084,"dur_h4":0.06379571051785263,"dur_h7":0.04120019064554782,"dur_h12":0.03888607253248183,"female":0.04430276169488517,"black":0.41343557029978084,"hispanic":0.0074802605048447076,"mixed":0.33082247433545586,"age":-0.04878222873944295,"age_h20":-0.03905335030363653,"age_h23":0.004633997787715487,"age_h26":0.01793168588819983,"age_h30":0.03129767581392387,"age_h35":-0.03433681679359841,"remarriage":-0.025066702777530876,"edu_none":0.18397547957730576,"edu_aa":-0.1777730021346834,"edu_ba":-0.4937912495620029,"kids_1":-0.01865201359758798,"kids_2p":0.08068438036523236,"not_both_par":0.1818646372535612,"mom_lt12":-0.007161461596115107,"mom_somecol":0.07064840650588974,"mom_ba":0.033047696464673405,"mom_unk":0.06259989392352633,"prior_cohab_1":0.1273050537265031,"prior_cohab_2p":0.45431983444178475,"preg_at_wedding":-0.2636305405862631,"attend_never":0.050891136713489424,"attend_monthly":-0.06563225552458749,"attend_weekly":-0.03879474402488621,"south":0.0029858640408465978},"baseline_profile":{"female":0.5303110173958883,"black":0.24846248462484624,"hispanic":0.20813565278509927,"mixed":0.011597258829731154,"age":-0.24406958221237138,"age_h20":6.045429923332883,"age_h23":3.9134305661727162,"age_h26":2.371807830192527,"age_h30":1.0862326530680424,"age_h35":0.2893896848617926,"remarriage":0.14927077842206993,"edu_none":0.22518010894394658,"edu_aa":0.045246881040238975,"edu_ba":0.14224213670708136,"kids_1":0.19891056053417677,"kids_2p":0.19196977684062555,"not_both_par":0.6109646810753822,"mom_lt12":0.2331751888947461,"mom_somecol":0.2109471094710947,"mom_ba":0.1283605693199789,"mom_unk":0.08355297838692673,"prior_cohab_1":0.28483570549991216,"prior_cohab_2p":0.1848532771041996,"preg_at_wedding":0.08416798453698823,"attend_never":0.40107186786153576,"attend_monthly":0.12475839044104726,"attend_weekly":0.11017395888244597,"south":0.3839395536812511}},"D":{"intercept":-1.5472760849815406,"coefs":{"dur":-0.06926403467182497,"dur_h1":-0.262114908976135,"dur_h3":0.12167852702189227,"yrs_together":-0.02876657663878347,"yrs_together_h1":-0.023861333073180873,"yrs_together_h3":-0.007271321247417581,"yrs_together_h8":0.025263017865167655,"age":-0.008020650504722284,"age_h25":-0.003979557666583134,"age_h35":0.010805642211696056,"age_h50":-0.005298519436315589,"female":0.061720576043009026,"edu_none":0.20364541134366915,"edu_somecol":0.08959793325075689,"edu_ba":-0.3387424172826087,"black":0.35781969468115987,"hispanic":-0.004926222765357773,"same_sex":0.5923945372744573,"met_online":0.10148289224803822,"quality_good":0.8840468024194886,"quality_fair_poor":1.8803995323341447,"quality_unk":0.0,"kids_hh":0.06687602042965064,"married_before":0.12236364722351506,"c2017":-0.298612310259438,"cohab":-0.9562820047311535,"married":-1.8311505596250488,"cohab_x_yrs_together":-0.024195495464900213,"cohab_x_yrs_together_h1":-0.015378020413950706,"cohab_x_yrs_together_h3":0.021451234851314935,"married_x_yrs_together":-0.010033412089508397,"married_x_yrs_together_h1":-0.008696034942623939,"married_x_yrs_together_h3":-0.004526792234891794},"baseline_profile":{"yrs_together":5.37511656296,"yrs_together_h1":4.585689988483439,"yrs_together_h3":3.5419312019949922,"yrs_together_h8":2.075568456540684,"age":4.26297149386428,"age_h25":15.301187445157666,"age_h35":9.31296479140812,"age_h50":3.106460755422,"female":0.5111845276743863,"edu_none":0.09155134818693189,"edu_somecol":0.38639225103961444,"edu_ba":0.2790428036190253,"black":0.14798858612461863,"hispanic":0.14804070861923535,"same_sex":0.037243202763098275,"met_online":0.17268437715554166,"quality_good":0.39413482427928864,"quality_fair_poor":0.16208796247127533,"quality_unk":0.0,"kids_hh":0.2341731511823129,"married_before":0.08337218015050973,"c2017":0.2911019812386311,"cohab":0.0,"married":0.0,"cohab_x_yrs_together":0.0,"cohab_x_yrs_together_h1":0.0,"cohab_x_yrs_together_h3":0.0,"married_x_yrs_together":0.0,"married_x_yrs_together_h1":0.0,"married_x_yrs_together_h3":0.0},"dur_knots":[1,3]}},"metrics":{"A":{"5y":{"mean_pred":0.20409147306597883,"observed":0.20342332430937857,"mean_abs_calib_error":0.013004377928158381,"calib_slope":0.9828542857385396,"c_index":0.649619891742168},"10y":{"mean_pred":0.3473697420242491,"observed":0.34883850505982517,"mean_abs_calib_error":0.015777729520416034,"calib_slope":0.9840029456574023,"c_index":0.6495158597624484}},"A_no_income":{"5y":{"mean_pred":0.204297386577671,"observed":0.20381169265019206,"mean_abs_calib_error":0.01510297126738265,"calib_slope":0.9950914345556381,"c_index":0.6500136506314448},"10y":{"mean_pred":0.34761157110884067,"observed":0.34927349190569096,"mean_abs_calib_error":0.017403686374626807,"calib_slope":0.9827908637933266,"c_index":0.6492030414471655}},"A60":{"5y":{"mean_pred":0.15643411995091422,"observed":0.1563017662304463,"mean_abs_calib_error":0.007069374144266502,"calib_slope":1.1000142285226384,"c_index":0.5999025814204361},"10y":{"mean_pred":0.2830754277459427,"observed":0.2816641921658104,"mean_abs_calib_error":0.012977944036778455,"calib_slope":1.0966363450356402,"c_index":0.5990429181517912}},"A_core97_on_NLSY79":{"5y":{"mean_pred":0.23830065209911538,"observed":0.1570403701978884,"mean_abs_calib_error":0.08126028190122697,"calib_slope":0.268614752727181,"c_index":0.5615672405864984},"10y":{"mean_pred":0.39945463063537656,"observed":0.284091639681329,"mean_abs_calib_error":0.11536299095404753,"calib_slope":0.34344321706026654,"c_index":0.5627665663738124}},"B":{"5y":{"mean_pred":0.23486354609160634,"observed":0.23200903488600405,"mean_abs_calib_error":0.023453953778676685,"calib_slope":0.9702193128535247,"c_index":0.659915623661877},"10y":{"mean_pred":0.37928458907272466,"observed":0.38009652800901944,"mean_abs_calib_error":0.027818762455181174,"calib_slope":1.0369059087524113,"c_index":0.6580754084194458}},"B_without_quality":{"5y":{"mean_pred":0.23449957702256863,"observed":0.23222611698980886,"mean_abs_calib_error":0.02834758564330078,"calib_slope":0.9713052224426578,"c_index":0.6518008943049481},"10y":{"mean_pred":0.3790409062783133,"observed":0.38029484627893273,"mean_abs_calib_error":0.025658920570566752,"calib_slope":1.0242895467704083,"c_index":0.6528544155742807}},"C":{"10y":{"c_index":0.6401853339865389,"mean_pred":0.6407565954291587,"observed":0.6393370262947419,"mean_abs_calib_error":0.008482233948680074,"calib_slope":0.9727862724344972}},"D":{"5y":{"c_index":0.6423741372369411,"mean_pred":0.6346420396266605,"observed":0.6277123049913041,"mean_abs_calib_error":0.07785650388883007,"calib_slope":0.6844237279416155}}},"average":{"A":[0.006903043614684634,0.03316007695410483,0.07057758172976669,0.12081159912377237,0.1623765860653944,0.20169328046509605,0.23841251507768424,0.2695743598561412,0.2974862175604317,0.32255506841032777,0.34716681514616166,0.36931622820560905,0.38633645852283627,0.40301948009544664,0.42298188624103417,0.4459111075350105],"A60":[0.00027300027300025675,0.01610376090759935,0.044329519473513046,0.08368114540223126,0.12210808365116443,0.15700158677560438,0.18894413473993243,0.21575371416635813,0.24154924989753201,0.2636181603141704,0.2838776294232813,0.30554494334566096,0.32232096780089736,0.33844736249988716,0.35595267552418774,0.36978910647506247],"B":[0.0,0.035814521026981905,0.08843140867260268,0.14713334696623204,0.19350963093858142,0.23142554986341624,0.2699597826364707,0.2998839494275898,0.33046320006104957,0.35422290331688444,0.3790642595205438,0.4000861043381633,0.4148612459741391,0.4348600778490366,0.4607901808207102,0.47874723570737654],"now":[0.0069,0.0296,0.0622,0.1063,0.143,0.1779,0.2108,0.2388,0.264,0.2868,0.3093,0.3296,0.3453,0.3607,0.3792,0.4006],"C":[0.0,0.22281512355052346,0.33426759372313397,0.4051219776848278,0.4600106427065017,0.49976650593402716,0.5304695257554813,0.5529159140435309,0.5774318054792307,0.5958069563264339,0.6106129670555639,0.626441242783954,0.63938952937065,0.6507416658338034,0.6609372511152543,0.670683669624111,0.6786377434252774,0.6865924233718332,0.6961185784214641,0.7053153459483694,0.7125036841674126,0.7166137107941513,0.7227123888629801,0.7324684134794356,0.7454083690866994,0.751853417000187],"D":[0.0,0.2940611160045049,0.4680905434928717,0.5224742505991435,0.6019811795910452,0.6189932809908114,0.6634668821259591,0.6634668821259591,0.6759451135757336]},"calibration":{"A":[{"horizon_m":60,"predicted":0.0642,"observed":0.0502,"n":638},{"horizon_m":60,"predicted":0.0948,"observed":0.0854,"n":637},{"horizon_m":60,"predicted":0.1252,"observed":0.125,"n":637},{"horizon_m":60,"predicted":0.1568,"observed":0.1613,"n":638},{"horizon_m":60,"predicted":0.1837,"observed":0.204,"n":637},{"horizon_m":60,"predicted":0.2082,"observed":0.2179,"n":637},{"horizon_m":60,"predicted":0.2371,"observed":0.2524,"n":638},{"horizon_m":60,"predicted":0.2672,"observed":0.2791,"n":637},{"horizon_m":60,"predicted":0.3077,"observed":0.2696,"n":637},{"horizon_m":60,"predicted":0.396,"observed":0.3892,"n":638},{"horizon_m":120,"predicted":0.1199,"observed":0.0978,"n":638},{"horizon_m":120,"predicted":0.1746,"observed":0.1722,"n":637},{"horizon_m":120,"predicted":0.2273,"observed":0.2465,"n":637},{"horizon_m":120,"predicted":0.2802,"observed":0.2817,"n":638},{"horizon_m":120,"predicted":0.3239,"observed":0.3403,"n":637},{"horizon_m":120,"predicted":0.3626,"observed":0.365,"n":637},{"horizon_m":120,"predicted":0.4067,"observed":0.4533,"n":638},{"horizon_m":120,"predicted":0.4511,"observed":0.4496,"n":637},{"horizon_m":120,"predicted":0.508,"observed":0.4758,"n":637},{"horizon_m":120,"predicted":0.6193,"observed":0.6061,"n":638}],"A60":[{"horizon_m":60,"predicted":0.0839,"observed":0.0883,"n":1099},{"horizon_m":60,"predicted":0.107,"observed":0.0947,"n":1100},{"horizon_m":60,"predicted":0.1233,"observed":0.1134,"n":1098},{"horizon_m":60,"predicted":0.1378,"observed":0.1283,"n":1101},{"horizon_m":60,"predicted":0.1504,"observed":0.1492,"n":1097},{"horizon_m":60,"predicted":0.1622,"observed":0.163,"n":1099},{"horizon_m":60,"predicted":0.1738,"observed":0.1738,"n":1098},{"horizon_m":60,"predicted":0.1864,"observed":0.209,"n":1099},{"horizon_m":60,"predicted":0.2029,"observed":0.1999,"n":1099},{"horizon_m":60,"predicted":0.2367,"observed":0.2436,"n":1099},{"horizon_m":120,"predicted":0.1585,"observed":0.164,"n":1099},{"horizon_m":120,"predicted":0.1999,"observed":0.1906,"n":1100},{"horizon_m":120,"predicted":0.2285,"observed":0.2185,"n":1098},{"horizon_m":120,"predicted":0.2534,"observed":0.2345,"n":1101},{"horizon_m":120,"predicted":0.2748,"observed":0.2417,"n":1097},{"horizon_m":120,"predicted":0.2945,"observed":0.2938,"n":1099},{"horizon_m":120,"predicted":0.3137,"observed":0.3204,"n":1098},{"horizon_m":120,"predicted":0.3341,"observed":0.355,"n":1099},{"horizon_m":120,"predicted":0.3606,"observed":0.377,"n":1099},{"horizon_m":120,"predicted":0.4127,"observed":0.4211,"n":1099}],"B":[{"horizon_m":60,"predicted":0.0839,"observed":0.0646,"n":275},{"horizon_m":60,"predicted":0.123,"observed":0.1049,"n":275},{"horizon_m":60,"predicted":0.1569,"observed":0.1339,"n":275},{"horizon_m":60,"predicted":0.1829,"observed":0.1854,"n":275},{"horizon_m":60,"predicted":0.2061,"observed":0.215,"n":275},{"horizon_m":60,"predicted":0.2284,"observed":0.256,"n":275},{"horizon_m":60,"predicted":0.2558,"observed":0.2845,"n":275},{"horizon_m":60,"predicted":0.291,"observed":0.2732,"n":275},{"horizon_m":60,"predicted":0.3403,"observed":0.3757,"n":275},{"horizon_m":60,"predicted":0.4803,"observed":0.427,"n":275},{"horizon_m":120,"predicted":0.1491,"observed":0.1123,"n":275},{"horizon_m":120,"predicted":0.2148,"observed":0.1795,"n":275},{"horizon_m":120,"predicted":0.27,"observed":0.2629,"n":275},{"horizon_m":120,"predicted":0.3112,"observed":0.334,"n":275},{"horizon_m":120,"predicted":0.3468,"observed":0.4007,"n":275},{"horizon_m":120,"predicted":0.3804,"observed":0.3871,"n":275},{"horizon_m":120,"predicted":0.4205,"observed":0.4289,"n":275},{"horizon_m":120,"predicted":0.4701,"observed":0.4435,"n":275},{"horizon_m":120,"predicted":0.5363,"observed":0.5876,"n":275},{"horizon_m":120,"predicted":0.6937,"observed":0.6644,"n":275}],"C":[{"horizon_m":60,"predicted":0.24666437578109174,"observed":0.2555468498848149,"n":1139},{"horizon_m":60,"predicted":0.3382069185959507,"observed":0.33643747347224406,"n":1138},{"horizon_m":60,"predicted":0.40625505515389704,"observed":0.4115775531751712,"n":1138},{"horizon_m":60,"predicted":0.4646857898275723,"observed":0.450395085817178,"n":1138},{"horizon_m":60,"predicted":0.5165347797188423,"observed":0.5145209219080074,"n":1138},{"horizon_m":60,"predicted":0.5609062778864575,"observed":0.5476089178779249,"n":1138},{"horizon_m":60,"predicted":0.6035227664065794,"observed":0.6082600565341547,"n":1138},{"horizon_m":60,"predicted":0.6489706777686476,"observed":0.6479424005183818,"n":1138},{"horizon_m":60,"predicted":0.7025254465380446,"observed":0.7082127587301429,"n":1138},{"horizon_m":60,"predicted":0.7843416347076576,"observed":0.7942751939272913,"n":1139},{"horizon_m":120,"predicted":0.3262280067720982,"observed":0.33817223121728346,"n":1139},{"horizon_m":120,"predicted":0.4387434705230585,"observed":0.4476235120235591,"n":1138},{"horizon_m":120,"predicted":0.5185702530032036,"observed":0.5179962143501318,"n":1138},{"horizon_m":120,"predicted":0.5844452808484524,"observed":0.5891393999104848,"n":1138},{"horizon_m":120,"predicted":0.6407389352380966,"observed":0.6228934689703053,"n":1138},{"horizon_m":120,"predicted":0.6870623372640644,"observed":0.6704787824643252,"n":1138},{"horizon_m":120,"predicted":0.7296104568682551,"observed":0.7311324032005121,"n":1138},{"horizon_m":120,"predicted":0.7732118664900455,"observed":0.7656020377214121,"n":1138},{"horizon_m":120,"predicted":0.8216662088431289,"observed":0.8299349119790117,"n":1138},{"horizon_m":120,"predicted":0.8873488364619436,"observed":0.8804500706628613,"n":1139}],"D":[{"horizon_m":12,"predicted":0.11159832730859558,"observed":0.13138686131386856,"n":137},{"horizon_m":12,"predicted":0.1775836504346288,"observed":0.23529411764705888,"n":136},{"horizon_m":12,"predicted":0.2402194848953437,"observed":0.2941176470588235,"n":136},{"horizon_m":12,"predicted":0.34180587812723773,"observed":0.38235294117647056,"n":136},{"horizon_m":12,"predicted":0.5354349325439376,"observed":0.4817518248175183,"n":137},{"horizon_m":60,"predicted":0.3386079188899672,"observed":0.38321059612712727,"n":137},{"horizon_m":60,"predicted":0.4997282673834531,"observed":0.5866478736995284,"n":136},{"horizon_m":60,"predicted":0.6243296907232656,"observed":0.6703178898038342,"n":136},{"horizon_m":60,"predicted":0.7780020336498173,"observed":0.6453536691782394,"n":136},{"horizon_m":60,"predicted":0.9325286661209351,"observed":0.8531715145252197,"n":137}]},"subgroups":[{"model":"A","dataset":"NLSY97","group":"first marriage","horizon":5,"n":5280,"predicted":0.1868,"observed":0.183},{"model":"A","dataset":"NLSY97","group":"remarriage","horizon":5,"n":1094,"predicted":0.2875,"observed":0.3009},{"model":"A","dataset":"NLSY97","group":"married under 30","horizon":5,"n":4244,"predicted":0.2107,"observed":0.2073},{"model":"A","dataset":"NLSY97","group":"married 30+","horizon":5,"n":2130,"predicted":0.191,"observed":0.1894},{"model":"A","dataset":"NLSY97","group":"first marriage","horizon":10,"n":5280,"predicted":0.3221,"observed":0.3244},{"model":"A","dataset":"NLSY97","group":"remarriage","horizon":10,"n":1094,"predicted":0.4692,"observed":0.4855},{"model":"A","dataset":"NLSY97","group":"married under 30","horizon":10,"n":4244,"predicted":0.3583,"observed":0.3574},{"model":"A","dataset":"NLSY97","group":"married 30+","horizon":10,"n":2130,"predicted":0.3255,"observed":0.3169},{"model":"A_no_income","dataset":"NLSY97","group":"first marriage","horizon":5,"n":5280,"predicted":0.1869,"observed":0.183},{"model":"A_no_income","dataset":"NLSY97","group":"remarriage","horizon":5,"n":1094,"predicted":0.2884,"observed":0.3009},{"model":"A_no_income","dataset":"NLSY97","group":"married under 30","horizon":5,"n":4244,"predicted":0.2112,"observed":0.2073},{"model":"A_no_income","dataset":"NLSY97","group":"married 30+","horizon":5,"n":2130,"predicted":0.1906,"observed":0.1894},{"model":"A_no_income","dataset":"NLSY97","group":"first marriage","horizon":10,"n":5280,"predicted":0.3221,"observed":0.3244},{"model":"A_no_income","dataset":"NLSY97","group":"remarriage","horizon":10,"n":1094,"predicted":0.4709,"observed":0.4855},{"model":"A_no_income","dataset":"NLSY97","group":"married under 30","horizon":10,"n":4244,"predicted":0.3588,"observed":0.3574},{"model":"A_no_income","dataset":"NLSY97","group":"married 30+","horizon":10,"n":2130,"predicted":0.3253,"observed":0.3169},{"model":"A60","dataset":"NLSY79","group":"first marriage","horizon":5,"n":7752,"predicted":0.1544,"observed":0.1534},{"model":"A60","dataset":"NLSY79","group":"remarriage","horizon":5,"n":3237,"predicted":0.1613,"observed":0.1659},{"model":"A60","dataset":"NLSY79","group":"married under 30","horizon":5,"n":7215,"predicted":0.1711,"observed":0.1713},{"model":"A60","dataset":"NLSY79","group":"married 30+","horizon":5,"n":3774,"predicted":0.1284,"observed":0.1286},{"model":"A60","dataset":"NLSY79","group":"first marriage","horizon":10,"n":7752,"predicted":0.2798,"observed":0.2767},{"model":"A60","dataset":"NLSY79","group":"remarriage","horizon":10,"n":3237,"predicted":0.2909,"observed":0.3022},{"model":"A60","dataset":"NLSY79","group":"married under 30","horizon":10,"n":7215,"predicted":0.3077,"observed":0.3066},{"model":"A60","dataset":"NLSY79","group":"married 30+","horizon":10,"n":3774,"predicted":0.2361,"observed":0.2368},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"first marriage","horizon":5,"n":7752,"predicted":0.2035,"observed":0.1534},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"remarriage","horizon":5,"n":3237,"predicted":0.3217,"observed":0.1659},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"married under 30","horizon":5,"n":7215,"predicted":0.2238,"observed":0.1713},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"married 30+","horizon":5,"n":3774,"predicted":0.266,"observed":0.1286},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"first marriage","horizon":10,"n":7752,"predicted":0.3497,"observed":0.2767},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"remarriage","horizon":10,"n":3237,"predicted":0.5186,"observed":0.3022},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"married under 30","horizon":10,"n":7215,"predicted":0.3803,"observed":0.3066},{"model":"A_core97_on_NLSY79","dataset":"NLSY79","group":"married 30+","horizon":10,"n":3774,"predicted":0.4361,"observed":0.2368},{"model":"B","dataset":"NLSY97 landmark","group":"first marriage","horizon":5,"n":2613,"predicted":0.2266,"observed":0.2245},{"model":"B","dataset":"NLSY97 landmark","group":"remarriage","horizon":5,"n":137,"predicted":0.392,"observed":0.3611},{"model":"B","dataset":"NLSY97 landmark","group":"married under 30","horizon":5,"n":2750,"predicted":0.2349,"observed":0.2314},{"model":"B","dataset":"NLSY97 landmark","group":"first marriage","horizon":10,"n":2613,"predicted":0.3686,"observed":0.3658},{"model":"B","dataset":"NLSY97 landmark","group":"remarriage","horizon":10,"n":137,"predicted":0.5837,"observed":0.6236},{"model":"B","dataset":"NLSY97 landmark","group":"married under 30","horizon":10,"n":2750,"predicted":0.3793,"observed":0.3791},{"model":"B_without_quality","dataset":"NLSY97 landmark","group":"first marriage","horizon":5,"n":2613,"predicted":0.2259,"observed":0.2245},{"model":"B_without_quality","dataset":"NLSY97 landmark","group":"remarriage","horizon":5,"n":137,"predicted":0.3986,"observed":0.3611},{"model":"B_without_quality","dataset":"NLSY97 landmark","group":"married under 30","horizon":5,"n":2750,"predicted":0.2345,"observed":0.2314},{"model":"B_without_quality","dataset":"NLSY97 landmark","group":"first marriage","horizon":10,"n":2613,"predicted":0.3678,"observed":0.3658},{"model":"B_without_quality","dataset":"NLSY97 landmark","group":"remarriage","horizon":10,"n":137,"predicted":0.5928,"observed":0.6236},{"model":"B_without_quality","dataset":"NLSY97 landmark","group":"married under 30","horizon":10,"n":2750,"predicted":0.379,"observed":0.3791}],"now_shift":-0.1474,"married_by":{"1":0.1580608793686584,"3":0.45509586276488395,"5":0.625,"10":0.8027210884353742},"C_now_shift":-0.1542};
+const MOD = DATA.models, K = MOD.knots;
+
+const OPTIONS = {
+  dyrsk: [["0.25", "Under 6 months"], ["0.75", "6–12 months"], ["1.5", "1–2 years"], ["2.5", "2–3 years"], ["4", "3–5 years"], ["7", "5–10 years"], ["12", "10+ years"]],
+  ymk: [["0.5", "Under a year"], ["1.5", "1–2 years"], ["3.5", "2–5 years"], ["7.5", "5–10 years"], ["15", "10–20 years"], ["25", "20–30 years"], ["32", "30+ years"]],
+  // value = years fed to the model; each band's midpoint (under 6 months counts from move-in)
+  cyrsk: [["0", "Under 6 months"], ["0.75", "6–12 months"], ["1.5", "1–2 years"], ["2.5", "2–3 years"], ["4", "3–5 years"], ["7", "5–10 years"], ["10", "10+ years"]],
+  gen: [["now", "Now (2010s on)"], ["2000", "2000s"], ["pre2000", "Before 2000"]],
+  sex: [["f", "Woman"], ["m", "Man"]],
+  edu: [["0", "No diploma"], ["1", "High school / GED"], ["2", "Associate"], ["3", "Bachelor's or higher"]],
+  order: [["0", "No, first marriage"], ["1", "Yes"]],
+  kids: [["0", "None"], ["1", "One"], ["2", "Two or more"]],
+  preg: [["0", "No"], ["1", "Yes"]],
+  attend: [["never", "Never"], ["rare", "A few times a year"], ["monthly", "About monthly"], ["weekly", "Weekly or more"]],
+  spedu: [["lt12", "No diploma"], ["hs", "High school"], ["somecol", "Some college"], ["ba", "Bachelor's or higher"], ["unk", "Not sure"]],
+  cohab: [["0", "Not at all"], ["lt1", "Under a year"], ["1to3", "1–3 years"], ["3p", "3+ years"]],
+  prior: [["0", "None"], ["1", "One"], ["2", "Two or more"]],
+  bothpar: [["1", "Yes"], ["0", "No"]],
+  mom: [["lt12", "No diploma"], ["hs", "High school"], ["somecol", "Some college"], ["ba", "Bachelor's or higher"], ["unk", "Not sure"]],
+  race: [["avg", "Prefer not to say"], ["white", "White or other"], ["black", "Black"], ["hispanic", "Hispanic"], ["mixed", "Multiracial"]],
+  together: [["1", "Yes"], ["0", "No, living apart"]],
+  commitk: [["known", "Answer"], ["unk", "Skip"]],
+  earnk: [["1", "Yes"], ["0", "Skip earnings"]],
+  qual: [["exc", "Excellent"], ["good", "Good"], ["fair", "Fair or poor"]],
+  online: [["0", "No"], ["1", "Yes"]],
+  samesex: [["0", "No"], ["1", "Yes"]],
+  dkids: [["0", "No"], ["1", "Yes"]],
+  calibk: [["D", "Dating"], ["C", "Living together"], ["A", "Engaged (2000s model)"], ["A60", "Engaged (1980s model)"], ["B", "Already married"]],
+};
+const DEFAULTS = { dyrsk: "1.5", ymk: "1.5", cyrsk: "0", gen: "now", sex: "f", edu: "3", order: "0", kids: "0", preg: "0", attend: "rare", spedu: "ba", cohab: "1to3", prior: "0", bothpar: "1", mom: "hs", race: "avg", together: "1", commitk: "known", earnk: "1", calibk: "A", qual: "exc", online: "0", samesex: "0", dkids: "0" };
+const LABELS = { qual: "Relationship", edu: "Your degree", order: "First marriage", kids: "Children before the wedding", preg: "Expecting at the wedding", attend: "Religious services", spedu: "Spouse's schooling", cohab: "Living together first", prior: "Earlier live-in partners", together: "Living together now" };
+const LEVER_KEYS = { A: ["edu", "order", "kids", "preg", "attend", "spedu", "cohab", "prior"], B: ["attend", "together"], C: ["edu", "prior", "attend"], D: ["qual"] };
+
+for (const [name, opts] of Object.entries(OPTIONS)) {
+  const box = document.getElementById(name);
+  box.setAttribute("role", "radiogroup");
+  opts.forEach(([val, text], i) => {
+    const id = `${name}-${i}`;
+    box.insertAdjacentHTML("beforeend", `<input type="radio" name="${name}" id="${id}" value="${val}"${val === DEFAULTS[name] ? " checked" : ""}><label for="${id}">${text}</label>`);
+  });
+}
+
+const hinge = (x, k) => Math.max(x - k, 0);
+const clip = (x, a, b) => Math.min(b, Math.max(a, x));
+
+function coreX(s, BP) {
+  const x = {};
+  x.female = s.sex === "f" ? 1 : 0;
+  if (s.race === "avg") { x.black = BP.black; x.hispanic = BP.hispanic; x.mixed = BP.mixed; }
+  else { x.black = +(s.race === "black"); x.hispanic = +(s.race === "hispanic"); x.mixed = +(s.race === "mixed"); }
+  const a = clip(s.age, 16, 45);
+  x.age = a - 26;
+  for (const k of K.age) x[`age_h${k}`] = hinge(a, k);
+  x.remarriage = +(s.order === "1");
+  x.edu_none = +(s.edu === "0"); x.edu_aa = +(s.edu === "2"); x.edu_ba = +(s.edu === "3");
+  x.kids_1 = +(s.kids === "1"); x.kids_2p = +(s.kids === "2");
+  x.not_both_par = +(s.bothpar === "0");
+  if (s.mom === "unk") { for (const k of ["mom_lt12", "mom_somecol", "mom_ba", "mom_unk"]) x[k] = BP[k]; }
+  else { x.mom_lt12 = +(s.mom === "lt12"); x.mom_somecol = +(s.mom === "somecol"); x.mom_ba = +(s.mom === "ba"); x.mom_unk = 0; }
+  return x;
+}
+function extraX(s) {
+  const x = {};
+  x.cohab_spouse = +(s.cohab !== "0");
+  x.prior_cohab_1 = +(s.prior === "1"); x.prior_cohab_2p = +(s.prior === "2");
+  x.preg_at_wedding = +(s.preg === "1");
+  x.attend_never = +(s.attend === "never"); x.attend_monthly = +(s.attend === "monthly"); x.attend_weekly = +(s.attend === "weekly");
+  // Census South region; share living there when no state is given
+  x.south = s.usstate ? +SOUTH.has(s.usstate) : 0.38;
+  return x;
+}
+// ACS 2019-24: each state's yearly divorce rate for married women vs. its region, after age, years married,
+// times married, education, race and birthplace (shrunk toward 1 for small states); the South itself is in the model
+const SOUTH = new Set(["DE", "MD", "DC", "VA", "WV", "NC", "SC", "GA", "FL", "KY", "TN", "AL", "MS", "AR", "LA", "OK", "TX"]);
+const STATE_RATIO = {"AR":1.157,"KY":1.129,"NV":1.157,"OR":1.152,"OK":1.111,"IN":1.112,"DE":1.074,"FL":1.063,"RI":1.089,"MA":1.087,"MO":1.086,"NM":1.085,"TN":1.048,"VT":1.075,"AL":1.043,"WV":1.04,"ND":1.069,"MS":1.037,"WY":1.062,"CO":1.062,"WA":1.044,"AZ":1.042,"SD":1.034,"ME":1.021,"KS":1.021,"AK":1.019,"OH":1.013,"IA":1.012,"MD":0.98,"NE":1.008,"DC":0.978,"HI":1.006,"LA":0.972,"NH":0.998,"VA":0.968,"NY":0.995,"CA":0.991,"MT":0.984,"GA":0.949,"NC":0.949,"TX":0.944,"CT":0.97,"ID":0.97,"PA":0.964,"SC":0.912,"IL":0.936,"MN":0.93,"MI":0.922,"UT":0.916,"NJ":0.909,"WI":0.901};
+const stateAdj = s => s.usstate ? Math.log(STATE_RATIO[s.usstate] || 1) : 0;
+function wageX(w) {
+  const k = clip(w, 0, 150), x = { wages_unk: 0, wages_none: +(k === 0), wages: k };
+  for (const kn of K.inc) x[`wages_h${kn}`] = hinge(k, kn);
+  return x;
+}
+function spouseAdjA(s) {
+  const M = MOD.A, SC = M.spouse_coefs, SM = M.spouse_means;
+  const z = { gap_older_spouse: hinge(s.gap, 3), gap_younger_spouse: hinge(-s.gap, 3) };
+  if (s.spedu !== "unk") Object.assign(z, { sp_lt12: +(s.spedu === "lt12"), sp_somecol: +(s.spedu === "somecol"), sp_ba: +(s.spedu === "ba") });
+  let adj = 0;
+  for (const k in z) adj += (z[k] - SM[k]) * SC[k];
+  return adj;
+}
+function dot(coefs, x) { let v = 0; for (const k in x) v += (coefs[k] || 0) * x[k]; return v; }
+
+// How long they lived together first (NLSY97, 6,374 marriages, net of age and background): vs not at all,
+// under a year OR 1.14, 1-3 years 0.89, 3+ years 0.75. The models already carry a yes/no term, so each band
+// is centred on the cohabiters' average (-0.084 log-odds).
+const COHAB_ADJ = { lt1: 0.215, "1to3": -0.033, "3p": -0.204 };
+const cohabAdj = s => COHAB_ADJ[s.cohab] || 0;
+// log-odds from everything but marriage duration, plus the model whose duration curve applies
+function score(s) {
+  if (s.mode === "B") {
+    const M = MOD.B, BP = M.baseline_profile;
+    const x = { ...coreX(s, BP), ...extraX(s) };
+    x.yrs_married = clip(s.ym, 0, 10);
+    for (const q of ["close", "cares"]) { x[`${q}_lt10`] = 10 - s[q]; x[`${q}_lt8`] = Math.max(8 - s[q], 0); }
+    x.conflict = s.conflict; x.conflict_h5 = hinge(s.conflict, 5);
+    x.commit_unk = +(s.commitk === "unk"); x.commit_lt10 = s.commitk === "unk" ? 0 : 10 - s.commit;
+    if (s.together === "0") {
+      Object.assign(x, { gap_older_spouse: 0, gap_younger_spouse: 0, sp_lt12: 0, sp_somecol: 0, sp_ba: 0, sp_unk: 1 });
+    } else {
+      x.gap_older_spouse = hinge(s.gap, 3); x.gap_younger_spouse = hinge(-s.gap, 3); x.sp_unk = 0;
+      if (s.spedu === "unk") for (const k of ["sp_lt12", "sp_somecol", "sp_ba"]) x[k] = BP[k] / (1 - BP.sp_unk);
+      else Object.assign(x, { sp_lt12: +(s.spedu === "lt12"), sp_somecol: +(s.spedu === "somecol"), sp_ba: +(s.spedu === "ba") });
+    }
+    const hh = s.rw + s.sw;
+    if (s.earnk === "1" && hh > 0) {
+      const wife = (s.sex === "f" ? s.rw : s.sw) / hh, hk = clip(hh, 0, 250);
+      Object.assign(x, { wife_share: wife - 0.5, wife_share_h50: hinge(wife, 0.5), share_unk: 0, hh_wages: hk, hh_wages_h40: hinge(hk, 40), hh_wages_h100: hinge(hk, 100) });
+    } else Object.assign(x, { wife_share: 0, wife_share_h50: 0, share_unk: 1, hh_wages: 0, hh_wages_h40: 0, hh_wages_h100: 0 });
+    return { M, lp: M.intercept + dot(M.coefs, x) + stateAdj(s) + cohabAdj(s) };
+  }
+  if (s.mode === "C") {
+    const M = MOD.C;
+    return { M, lp: M.intercept + dot(M.coefs, { ...coreX(s, M.baseline_profile), ...extraX(s) }), after1: DATA.C_now_shift };
+  }
+  if (s.mode === "D") {
+    const M = MOD.D, BP = M.baseline_profile, x = {};
+    const y = clip(s.dyrs, 0, 40), a = clip(s.dage, 18, 80);
+    x.yrs_together = y; for (const k of [1, 3, 8]) x[`yrs_together_h${k}`] = hinge(y, k);
+    x.age = a - 35; for (const k of [25, 35, 50]) x[`age_h${k}`] = hinge(a, k);
+    x.female = +(s.sex === "f");
+    x.edu_none = +(s.edu === "0"); x.edu_somecol = +(s.edu === "2"); x.edu_ba = +(s.edu === "3");
+    if (s.race === "avg") { x.black = BP.black; x.hispanic = BP.hispanic; }
+    else { x.black = +(s.race === "black"); x.hispanic = +(s.race === "hispanic"); }
+    x.same_sex = +(s.samesex === "1"); x.met_online = +(s.online === "1");
+    x.quality_good = +(s.qual === "good"); x.quality_fair_poor = +(s.qual === "fair");
+    x.kids_hh = +(s.dkids === "1"); x.married_before = +(s.order === "1"); x.c2017 = BP.c2017;
+    return { M, lp: M.intercept + dot(M.coefs, x), knots: M.dur_knots };
+  }
+  const A = MOD.A;
+  const extras = { ...extraX(s), ...wageX(s.wage) };
+  if (s.gen === "1960") {
+    // NLSY79 fit for the background questions; other answers borrow NLSY97 effects, centered
+    const M = MOD.A60;
+    let lp = M.intercept + dot(M.coefs, coreX(s, M.baseline_profile)) + spouseAdjA(s) + (GEN_SHIFT[s.gen] || 0);
+    for (const k in extras) lp += (A.coefs[k] || 0) * (extras[k] - A.baseline_profile[k]);
+    return { M, lp };
+  }
+  // "Marrying now": NSFG 2002-2023 puts weddings since 2010 at 0.76x the odds of 2000s weddings (same age,
+  // education, race, family background); NLSY97 weddings are already 46% post-2010, so the shift is the rest
+  const now = s.gen === "now" ? DATA.now_shift : GEN_SHIFT[s.gen] || 0;
+  return { M: A, lp: A.intercept + dot(A.coefs, { ...coreX(s, A.baseline_profile), ...extras }) + spouseAdjA(s) + now + stateAdj(s) + cohabAdj(s) };
+}
+// years of follow-up behind each stage's model, and the horizons shown up top
+const SPAN = { A: 15, B: 15, C: 15, D: 8 }, HZ = { A: [5, 10], B: [5, 10], C: [5, 10], D: [1, 5] };
+// time already together for stages where the model's clock starts at the move-in
+const already = s => s.mode === "C" ? s.cyrs : 0;
+// Past 5 years married, the early-marriage model runs out of data: use the wedding-day model for the decade
+// they married in, conditioned on still being married, plus the shift the early-marriage answers give.
+const LONG = 5;
+const eraOf = ym => { const y = new Date().getFullYear() - ym; return y >= 2010 ? "now" : y >= 2000 ? "2000" : "pre2000"; };
+const eraShift = g => g === "now" ? DATA.now_shift : GEN_SHIFT[g] || 0;
+function condFrom(M, lp, y0, years) {
+  const full = [0]; let surv = 1;
+  for (let t = 0; t < Math.ceil(y0) + years; t++) {
+    let l = lp + M.coefs.dur * t;
+    for (const k of K.dur) l += M.coefs[`dur_h${k}`] * hinge(t, k);
+    surv *= 1 - 1 / (1 + Math.exp(-l)); full.push(1 - surv);
+  }
+  const S = t => { const a = Math.floor(t), f = t - a; return Math.exp((1 - f) * Math.log(1 - full[a]) + f * Math.log(1 - full[Math.min(a + 1, full.length - 1)])); };
+  return Array.from({ length: years + 1 }, (_, h) => 1 - S(y0 + h) / S(y0));
+}
+function longMarried(s, years) {
+  const typical = { ...s, ym: LONG, close: 9, cares: 10, conflict: 3, commitk: "known", commit: 10, together: "1" };
+  const feel = score({ ...s, ym: LONG }).lp - score(typical).lp;
+  const { M, lp } = score({ ...s, mode: "A", gen: eraOf(s.ym) });
+  return condFrom(M, lp + feel, s.ym, years);
+}
+function longAvg(ym, years) {
+  const A = MOD.A;
+  return condFrom(A, A.intercept + dot(A.coefs, A.baseline_profile) + eraShift(eraOf(ym)), ym, years);
+}
+function curve(s, years = SPAN[s.mode]) {
+  if (s.mode === "B" && s.ym > LONG) return longMarried(s, years);
+  const y0 = already(s);
+  if (y0 > 0) {
+    // chance of splitting within h years, given still together after y0 years
+    const full = rawCurve(s, Math.ceil(y0) + years), S = t => {
+      const a = Math.floor(t), f = t - a;
+      return Math.exp((1 - f) * Math.log(1 - full[a]) + f * Math.log(1 - full[Math.min(a + 1, full.length - 1)]));
+    };
+    return Array.from({ length: years + 1 }, (_, h) => 1 - S(y0 + h) / S(y0));
+  }
+  return rawCurve(s, years);
+}
+function condAvg(avg, y0, years) {
+  if (!(y0 > 0)) return avg.slice(0, years + 1);
+  const S = t => { const a = Math.min(Math.floor(t), avg.length - 2), f = Math.min(t - a, 1); return (1 - f) * (1 - avg[a]) + f * (1 - avg[a + 1]); };
+  return Array.from({ length: years + 1 }, (_, h) => 1 - S(Math.min(y0 + h, avg.length - 1)) / S(y0));
+}
+function rawCurve(s, years) {
+  const { M, lp, knots, after1 = 0 } = score(s);
+  const out = [0]; let surv = 1;
+  for (let t = 0; t < years; t++) {
+    let l = lp + M.coefs.dur * t + (t >= 1 ? after1 : 0);
+    for (const k of (knots || K.dur)) l += M.coefs[`dur_h${k}`] * hinge(t, k);
+    surv *= 1 - 1 / (1 + Math.exp(-l));
+    out.push(1 - surv);
+  }
+  return out;
+}
+
+let mode = "A", stage = "A";
+function state() {
+  const s = { mode };
+  for (const id of ["age", "gap", "wage", "ym", "close", "cares", "conflict", "commit", "rw", "sw", "dyrs", "dage", "cyrs"]) s[id] = +document.getElementById(id).value;
+  for (const name of Object.keys(OPTIONS)) s[name] = document.querySelector(`input[name="${name}"]:checked`).value;
+  s.usstate = document.getElementById("usstate").value;
+  s.cyrs = +s.cyrsk; s.dyrs = +s.dyrsk; s.ym = +s.ymk;
+  return s;
+}
+const pct = p => `${Math.round(p * 100)}%`;
+const money = k => k === 0 ? "$0" : k >= 150 ? "$150k+" : `$${k}k`;
+// Other wedding decades: NSFG 2002-2023 first marriages, odds vs 1980s weddings for the same age, education,
+// race, family background and living together first: 1970s 1.14, 1990s 1.05, 2000s 0.98, 2010s 0.76.
+// NLSY97 weddings sit at a 2000s/2010s mix (log-odds -0.127 vs 1980s), so 2000s and 1990s shift the NLSY97
+// model by the difference. One model for every decade keeps the comparison like for like.
+// Before 2000 pools the 1970s-90s by their NSFG counts (log-odds +0.043 vs 1980s).
+const GEN_SHIFT = { "2000": 0.109, "pre2000": 0.170 };
+function shiftAvg(F, d) {
+  const out = [F[0]];
+  for (let t = 1; t < F.length; t++) {
+    const h = 1 - (1 - F[t]) / (1 - F[t - 1]), o = h / (1 - h) * Math.exp(d);
+    out.push(1 - (1 - out[t - 1]) * (1 - o / (1 + o)));
+  }
+  return out;
+}
+DATA.average.A2000 = shiftAvg(DATA.average.A, GEN_SHIFT["2000"]);
+DATA.average.Apre = shiftAvg(DATA.average.A, GEN_SHIFT["pre2000"]);
+const avgKey = s => s.mode === "B" || s.mode === "C" || s.mode === "D" ? s.mode : { now: "now", "2000": "A2000", pre2000: "Apre" }[s.gen];
+
+function drawChart(c, avg) {
+  const svg = document.getElementById("chart");
+  const W = 400, H = 210, L = 34, R = 22, T = 10, B = 26, span = c.length - 1;
+  const ymax = Math.min(1, Math.max(0.6, Math.ceil(Math.max(...c, ...avg) * 10) / 10));
+  const X = t => L + (t / span) * (W - L - R), Y = p => T + (1 - p / ymax) * (H - T - B);
+  let g = "";
+  for (let p = 0; p <= ymax + 1e-9; p += 0.2) g += `<line x1="${L}" x2="${W - R}" y1="${Y(p)}" y2="${Y(p)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(p) + 4}" text-anchor="end">${Math.round(p * 100)}%</text>`;
+  for (const t of span === 8 ? [0, 2, 4, 6, 8] : [0, 5, 10, 15]) g += `<text x="${X(t)}" y="${H - 8}" text-anchor="middle">${t} yr</text>`;
+  const path = arr => arr.map((p, t) => `${t ? "L" : "M"}${X(t).toFixed(1)},${Y(p).toFixed(1)}`).join("");
+  g += `<path d="${path(c)}L${X(span)},${Y(0)}L${X(0)},${Y(0)}Z" fill="var(--risk-soft)" opacity=".7"/>`;
+  g += `<path d="${path(avg)}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g += `<path d="${path(c)}" fill="none" stroke="var(--risk)" stroke-width="2.5"/>`;
+  for (const t of HZ[mode]) g += `<circle cx="${X(t)}" cy="${Y(c[t])}" r="4" fill="var(--risk)" stroke="var(--panel)" stroke-width="2"/>`;
+  svg.innerHTML = g;
+}
+
+function levers(s, base10) {
+  const items = [];
+  const keys = LEVER_KEYS[s.mode];
+  for (const name of keys) {
+    let best = null;
+    for (const [val, text] of OPTIONS[name]) {
+      if (val === s[name] || val === "unk") continue;
+      const d = base10 - curve({ ...s, [name]: val })[HZ[s.mode][1]];
+      if (!best || d > best.d) best = { d, label: `${s.mode === "C" && name === "preg" ? "Expecting when you moved in" : LABELS[name]}: ${text.toLowerCase()}` };
+    }
+    if (best && best.d > 0.005) items.push(best);
+  }
+  const sliders = s.mode === "C" || s.mode === "D" ? [] : s.mode === "B"
+    ? [["close", v => `Feeling closer (${v} of 10)`, [10]], ["cares", v => `Feeling more cared for (${v} of 10)`, [10]], ["conflict", v => `Less conflict (${v} of 10)`, [0, 2]]]
+    : [["age", v => `Marrying at ${v} instead of ${s.age}`, Array.from({ length: 23 }, (_, i) => 18 + i)]];
+  for (const [id, lab, vals] of sliders) {
+    let best = null;
+    for (const v of vals) { if (v === s[id]) continue; const d = base10 - curve({ ...s, [id]: v })[HZ[s.mode][1]]; if (!best || d > best.d) best = { d, label: lab(v) }; }
+    if (best && best.d > 0.005) items.push(best);
+  }
+  items.sort((a, b) => b.d - a.d);
+  document.getElementById("levers").innerHTML = items.length
+    ? items.slice(0, 5).map(i => `<li><span>${i.label}</span><span class="d">−${(i.d * 100).toFixed(1)} pts</span></li>`).join("") +
+      `<li><span class="none">Change in the ${HZ[s.mode][1]}-year chance if only that one answer were different. Background answers you can't change are left out.</span><span></span></li>`
+    : `<li><span class="none">No single change lowers the ${HZ[s.mode][1]}-year chance by more than half a point.</span><span></span></li>`;
+}
+
+function setMode(m) {
+  mode = m; stage = m;
+  for (const b of document.querySelectorAll(".modes button[data-mode]")) b.setAttribute("aria-selected", String(b.dataset.mode === m));
+  for (const b of document.querySelectorAll(".modes button[data-stage]")) b.setAttribute("aria-selected", String(b.dataset.stage === stage));
+  for (const el of document.querySelectorAll("[data-show]")) el.hidden = !el.dataset.show.split(" ").includes(m);
+  document.getElementById("you-legend").textContent = m === "C" ? "You, when you moved in together" : m === "D" ? "You" : m === "B" ? "You, on your wedding day" : "You, at the wedding";
+  document.getElementById("age-l").textContent = m === "C" ? "Age when you moved in" : "Age at the wedding";
+  document.getElementById("preg-l").textContent = m === "C" ? "Expecting a baby when you moved in?" : "Expecting a baby at the wedding?";
+  document.getElementById("prior-l").textContent = m === "C" ? "Earlier live-in partners" : "Earlier live-in partners (not this spouse)";
+  const ck = document.querySelector(`input[name="calibk"][value="${m === "A" ? "A" : m}"]`); if (ck) ck.checked = true;
+  const age = document.getElementById("age");
+  age.max = 45;
+  if (+age.value > +age.max) age.value = age.max;
+  update();
+}
+
+function update() {
+  const s = state();
+  document.getElementById("age-v").textContent = `${s.age}`;
+  document.getElementById("gap-v").textContent = s.gap === 0 ? "same age" : `${Math.abs(s.gap)} yr ${s.gap > 0 ? "older" : "younger"}`;
+  document.getElementById("wage-v").textContent = money(s.wage);
+  document.getElementById("rw-v").textContent = money(s.rw);
+  document.getElementById("sw-v").textContent = money(s.sw);
+  document.getElementById("ym-v").textContent = `${s.ym} yr`;
+  for (const q of ["close", "cares", "conflict"]) document.getElementById(`${q}-v`).textContent = `${s[q]}`;
+  document.getElementById("commit-v").textContent = s.commitk === "unk" ? "skipped" : `${s.commit}`;
+  document.getElementById("commit").disabled = s.commitk === "unk";
+  for (const id of ["rw", "sw"]) document.getElementById(id).disabled = s.earnk === "0";
+  document.getElementById("gen-hint").textContent = {
+    "2000": "The same couple, married in the 2000s. Set to 2000s weddings in the national NSFG survey (13,892 marriages), for couples of the same age and background.",
+    pre2000: "The same couple, married in the 1970s to 1990s (NSFG, 13,633 marriages). Raw divorce rates were much higher then, 40% within 10 years for 1980s weddings, but mostly because people married younger and with less schooling. For couples of the same age and background, the risk was about the same as in the 2000s; the big drop came in the 2010s.",
+  }[s.gen] || (s.gen === "now" ? "Recent marriages are lasting longer. Of first marriages from the 2010s, 22% ended within 10 years, against 31% from the 2000s and 40% from the 1980s (national NSFG survey, 34,740 marriages). So this takes the 2000s model and lowers it to match couples who married since 2010."
+    : "");
+  document.getElementById("dyrs-v").textContent = s.dyrs === 0 ? "just started" : `${s.dyrs} yr`;
+  document.getElementById("dage-v").textContent = `${s.dage}`;
+  document.getElementById("cyrs-v").textContent = s.cyrs === 0 ? "just moved in" : `${s.cyrs} yr`;
+  const [h1, h2] = HZ[s.mode];
+  const from = s.mode === "B" || s.mode === "D" || (s.mode === "C" && s.cyrs > 0) ? "from now" : s.mode === "C" ? "of moving in" : "of the wedding";
+  const yr = h => h === 1 ? "1 year" : `${h} years`;
+  document.getElementById("k5").textContent = `Split up within ${yr(h1)} ${from}`;
+  document.getElementById("k10").textContent = `Split up within ${yr(h2)} ${from}`;
+
+  const long = s.mode === "B" && s.ym > LONG;
+  const c = curve(s), key = avgKey(s), avg = long ? longAvg(s.ym, SPAN.B) : condAvg(DATA.average[key], already(s), SPAN[s.mode]);
+  document.getElementById("r5").textContent = pct(c[h1]);
+  document.getElementById("r10").textContent = pct(c[h2]);
+  document.getElementById("r5s").textContent = `about ${Math.round(c[h1] * 100)} in 100 couples`;
+  document.getElementById("r10s").textContent = `about ${Math.round(c[h2] * 100)} in 100 couples`;
+  const half = c.findIndex(p => p >= 0.5), span = c.length - 1;
+  document.getElementById("half").innerHTML = half > 0
+    ? `Half of couples like this would split up within about <b>${yr(half)}</b>.`
+    : `More than half of couples like this, <b>${pct(1 - c[span])}</b>, would still be together after ${span} years.`;
+  const ratio = c[h2] / avg[h2];
+  const word = ratio > 1.1 ? "higher than" : ratio < 0.9 ? "lower than" : "close to";
+  let who = { D: "the average dating couple in the survey, together a median of 2½ years when first asked", C: s.cyrs > 0 ? `the average couple still living together (or married to each other) after ${s.cyrs} years` : "the average couple moving in together", now: "the average marriage today", A: "the average NLSY97 marriage", A60: "the average NLSY79 marriage", A2000: "the average survey couple married in the 2000s", Apre: "the average survey couple married before 2000", B: "the average early-married couple in NLSY97" }[key];
+  if (long) who = `the average couple still married after ${s.ym} years`;
+  document.getElementById("cmp").innerHTML = `That is <b>${word}</b> ${who}, where ${pct(avg[h1])} ${key === "now" ? "would be expected to split up" : "split up"} within ${yr(h1)} and ${pct(avg[h2])} within ${h2}.`;
+  document.getElementById("this-label").textContent = { D: "This relationship", C: "This relationship", A: "This marriage", B: "This marriage" }[s.mode];
+  document.getElementById("avg-label").textContent = { D: "Average dating couple", C: "Average live-in couple", now: "Average marriage today", A: "Average NLSY97 marriage", A60: "Average NLSY79 marriage", A2000: "Average 2000s marriage", Apre: "Average pre-2000 marriage", B: "Average early-married couple" }[key];
+  document.getElementById("basis").textContent = { D: "Model: HCMST couples asked in 2009 or 2017 and followed to 2017 or 2022; fitted on all three stages, used here for dating couples.", C: "Model: NLSY97 couples from the month they moved in; marrying each other keeps the clock running.", now: "Model: NLSY97 wedding-day answers, recalibrated to weddings since 2010 (NSFG).", A: "Model: NLSY97 wedding-day answers.", A60: "Model: NLSY79 background answers, other answers borrowed from NLSY97.", A2000: "Model: NLSY97 wedding-day answers, set to 2000s weddings (NSFG).", Apre: "Model: NLSY97 wedding-day answers, set to 1970s–90s weddings (NSFG).", B: "Model: NLSY97 couples asked about their marriage between 2000 and 2008." }[key];
+  if (long) {
+    document.getElementById("avg-label").textContent = `Average couple married ${s.ym} years`;
+    document.getElementById("basis").textContent = `Model: NLSY97 wedding-day answers for ${eraOf(s.ym) === "now" ? "2010s" : eraOf(s.ym) === "2000" ? "2000s" : "pre-2000"} weddings, counted from now for couples still married after ${s.ym} years. How the marriage feels uses the effects measured in early marriage. Beyond about 20 years the survey data get thin.`;
+  }
+  drawChart(c, avg);
+  levers(s, c[10]);
+  drawCalib(s.calibk);
+}
+
+function drawCalib(key) {
+  const svg = document.getElementById("calib");
+  const W = 360, H = 240, L = 40, R = 12, T = 10, B = 30, max = key === "C" || key === "D" ? 1 : 0.7;
+  const X = p => L + (p / max) * (W - L - R), Y = p => T + (1 - p / max) * (H - T - B);
+  let g = "";
+  for (let p = 0; p <= max + 1e-9; p += 0.1) {
+    g += `<line x1="${L}" x2="${W - R}" y1="${Y(p)}" y2="${Y(p)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(p) + 4}" text-anchor="end">${Math.round(p * 100)}%</text>`;
+    g += `<text x="${X(p)}" y="${H - 14}" text-anchor="middle">${Math.round(p * 100)}</text>`;
+  }
+  g += `<text x="${(L + W - R) / 2}" y="${H - 1}" text-anchor="middle">predicted (%)</text>`;
+  g += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(max)}" y2="${Y(max)}" stroke="var(--muted)" stroke-dasharray="4 4"/>`;
+  const hs = key === "D" ? [12, 60] : [60, 120];
+  document.getElementById("calib-legend").innerHTML = `<span style="--sw: var(--accent)">${hs[0] / 12} year${hs[0] > 12 ? "s" : ""}</span><span style="--sw: var(--risk)">${hs[1] / 12} years</span>`;
+  for (const [h, col] of [[hs[0], "var(--accent)"], [hs[1], "var(--risk)"]]) {
+    const pts = DATA.calibration[key].filter(r => r.horizon_m === h);
+    g += `<path d="${pts.map((r, i) => `${i ? "L" : "M"}${X(r.predicted)},${Y(r.observed)}`).join("")}" fill="none" stroke="${col}" stroke-width="1.5" opacity=".6"/>`;
+    for (const r of pts) g += `<circle cx="${X(r.predicted)}" cy="${Y(r.observed)}" r="3.5" fill="${col}"><title>predicted ${pct(r.predicted)}, observed ${pct(r.observed)} (${r.n} couples)</title></circle>`;
+  }
+  svg.innerHTML = g;
+}
+
+function drawTable() {
+  const m = DATA.metrics;
+  const rows = [
+    ["Living together, from move-in (NLSY97)", m.C],
+    ["Wedding day, born ~1980 (NLSY97)", m.A],
+    ["Same, without earnings", m.A_no_income],
+    ["Wedding day, born ~1960 (NLSY79)", m.A60],
+    ["NLSY97 model used on NLSY79 as is", m.A_core97_on_NLSY79],
+    ["Already married (NLSY97)", m.B],
+    ["Same, without the feelings questions", m.B_without_quality],
+  ];
+  const f = v => v.toFixed(2), p = v => `${(v * 100).toFixed(1)}`;
+  let h = `<thead><tr><th>Held-out test</th><th>Concordance</th><th>Pred. 10y</th><th>Obs. 10y</th><th>Avg. miss</th></tr></thead><tbody>`;
+  h += `<tr><td>Dating (HCMST), 5 years</td><td>${f(m.D["5y"].c_index)}</td><td>${p(m.D["5y"].mean_pred)}%</td><td>${p(m.D["5y"].observed)}%</td><td>${p(m.D["5y"].mean_abs_calib_error)} pts</td></tr>`;
+  for (const [name, r] of rows) h += `<tr><td>${name}</td><td>${f(r["10y"].c_index)}</td><td>${p(r["10y"].mean_pred)}%</td><td>${p(r["10y"].observed)}%</td><td>${p(r["10y"].mean_abs_calib_error)} pts</td></tr>`;
+  h += `</tbody>`;
+  const sub = DATA.subgroups.filter(r => r.horizon === 10 && ["A", "A60", "A_core97_on_NLSY79"].includes(r.model) && r.group.startsWith("re"));
+  h += `<tbody><tr><th colspan="5">Remarriages, 10 years</th></tr>` + sub.map(r => `<tr><td>${{ A: "NLSY97 model on NLSY97", A60: "NLSY79 model on NLSY79", A_core97_on_NLSY79: "NLSY97 model on NLSY79" }[r.model]}</td><td></td><td>${p(r.predicted)}%</td><td>${p(r.observed)}%</td><td>${p(Math.abs(r.predicted - r.observed))} pts</td></tr>`).join("") + `</tbody>`;
+  document.getElementById("mt").innerHTML = h;
+}
+
+document.getElementById("f").addEventListener("input", update);
+document.getElementById("f").addEventListener("submit", e => e.preventDefault());
+document.getElementById("calibk").addEventListener("input", update);
+for (const b of document.querySelectorAll(".modes button[data-mode]")) b.addEventListener("click", () => setMode(b.dataset.mode));
+for (const b of document.querySelectorAll(".modes button[data-stage]")) b.addEventListener("click", () => setMode(b.dataset.stage));
+drawTable(); setMode("A");
+
+</script>
+
+</body></html>

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Will We Last</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an actuarial "life table" for relationships. Hero = the three survival curves; then stages, drivers, accuracy, sources. Same tokens as the calculator. */
+:root {
+  --bg: #f3f4f6;
+  --panel: #ffffff;
+  --ink: #18202c;
+  --muted: #5b6575;
+  --line: #d9dde4;
+  --accent: #27548a;
+  --accent-soft: #e3ebf5;
+  --risk: #a3366d;
+  --risk-soft: #f6e4ee;
+  --dating: #a3366d;
+  --cohab: #b8741a;
+  --married: #27548a;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161d; --panel: #1a2029; --ink: #e8ebf0; --muted: #9aa4b3; --line: #2c3442;
+    --accent: #8db4e6; --accent-soft: #1f2d40; --risk: #e486b6; --risk-soft: #3a2030;
+    --dating: #e486b6; --cohab: #e6b061; --married: #8db4e6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161d; --panel: #1a2029; --ink: #e8ebf0; --muted: #9aa4b3; --line: #2c3442;
+  --accent: #8db4e6; --accent-soft: #1f2d40; --risk: #e486b6; --risk-soft: #3a2030;
+  --dating: #e486b6; --cohab: #e6b061; --married: #8db4e6;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 72px; }
+nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 20px; flex-wrap: wrap; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
+.brand span { color: var(--muted); font-weight: 500; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; }
+h1 { font-weight: 800; font-size: clamp(40px, 7vw, 76px); line-height: .98; letter-spacing: -.03em; }
+h2 { font-weight: 700; font-size: clamp(26px, 3.4vw, 36px); line-height: 1.1; letter-spacing: -.015em; }
+h3 { font-weight: 700; font-size: 20px; line-height: 1.2; }
+p { margin: 0; }
+.lede { font-size: 19px; color: var(--muted); max-width: 54ch; }
+.btn { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; border-radius: 999px; padding: 13px 22px; background: var(--accent); color: var(--panel); border: 2px solid var(--accent); }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--accent); padding: 8px 16px; font-size: 14px; }
+.btn:focus-visible, a:focus-visible { outline: 3px solid var(--risk); outline-offset: 3px; }
+.btn svg { width: 16px; height: 16px; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; align-items: center; }
+.hero-copy { display: grid; gap: 22px; justify-items: start; }
+.hero-copy .note { font-size: 13px; color: var(--muted); }
+.chart-card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px 18px 14px; display: grid; gap: 10px; min-width: 0; }
+.chart-card .cap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+#curves { width: 100%; height: auto; display: block; }
+#curves text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+#curves .lab { font-family: var(--body); font-size: 13px; font-weight: 600; }
+.chart-card .foot { font-size: 12.5px; color: var(--muted); }
+
+/* stages */
+.section { display: grid; gap: 28px; }
+.section-head { display: grid; gap: 10px; max-width: 62ch; }
+.section-head p { color: var(--muted); }
+.stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.stage { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 14px; align-content: start; border-top: 5px solid var(--c); }
+.stage .big { font-family: var(--display); font-weight: 800; font-size: 54px; line-height: 1; color: var(--c); font-variant-numeric: tabular-nums; }
+.stage .big small { font-size: 18px; font-weight: 600; color: var(--ink); margin-left: 4px; }
+.stage .what { font-size: 14.5px; }
+.stage ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+.stage .src { font-family: var(--mono); font-size: 11.5px; color: var(--muted); letter-spacing: .03em; }
+
+/* drivers */
+.drivers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
+.driver { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 16px; padding-block: 18px; border-top: 1px solid var(--line); }
+.driver .x { font-family: var(--display); font-weight: 700; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.driver .x.up { color: var(--risk); }
+.driver .x.down { color: var(--married); }
+.driver .x.flat { color: var(--muted); }
+.driver p { font-size: 14.5px; color: var(--muted); }
+.driver b { color: var(--ink); font-weight: 600; }
+.legend-note { font-size: 13px; color: var(--muted); }
+
+/* accuracy */
+.honest { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.honest .points { display: grid; gap: 16px; }
+.honest .points p { color: var(--muted); }
+.honest .points b { color: var(--ink); }
+.dial { background: var(--accent-soft); border-radius: 14px; padding: 24px; display: grid; gap: 14px; }
+.dial .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: baseline; font-size: 14.5px; }
+.dial .bar { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--line); position: relative; overflow: hidden; }
+.dial .bar i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 4px; }
+.dial .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* sources */
+.tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 14px; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--mono); font-weight: 500; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .sub { color: var(--muted); font-size: 13px; }
+
+/* closing */
+.closing { background: var(--ink); color: var(--bg); border-radius: 18px; padding: 40px clamp(20px, 5vw, 48px); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; }
+.closing p { color: color-mix(in srgb, var(--bg) 75%, var(--ink)); max-width: 52ch; margin-top: 8px; }
+.closing .btn { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+footer { font-size: 13px; color: var(--muted); display: grid; gap: 6px; max-width: 70ch; }
+
+@media (max-width: 860px) {
+  .hero, .honest, .closing { grid-template-columns: minmax(0, 1fr); }
+  .stages { grid-template-columns: minmax(0, 1fr); }
+  .drivers { grid-template-columns: minmax(0, 1fr); }
+  .wrap { gap: 56px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  #curves path.line { stroke-dasharray: var(--len); stroke-dashoffset: 0; animation: draw 1.4s ease-out both; }
+  @keyframes draw { from { stroke-dashoffset: var(--len); } }
+}
+</style>
+
+<div class="wrap">
+  <nav>
+    <div class="brand">Will We Last <span>Relationship calculator</span></div>
+    <a class="btn ghost" href="/calculator">Open the calculator</a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Built from 40 years of US survey data</div>
+      <h1>Will we last?</h1>
+      <p class="lede">Dating, living together or married, answer a few questions and see the chance your relationship is still going in 1, 5 and 10 years. Every number comes from how real relationships turned out for tens of thousands of people.</p>
+      <a class="btn" href="/calculator">Try the calculator
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      <p class="note">Free. Your answers stay in your browser.</p>
+    </div>
+    <figure class="chart-card" style="margin:0">
+      <div class="cap"><span class="eyebrow">Share still together</span><span class="eyebrow">Years</span></div>
+      <svg id="curves" viewBox="0 0 520 300" role="img" aria-label="Share of couples still together by years: dating couples drop fastest, live-in couples next, couples marrying today stay together longest."></svg>
+      <figcaption class="foot">Typical couples in each survey. Dating is counted from when they were first asked (HCMST, followed up to 8 years). Living together is counted from move-in, and marrying each other keeps the clock running (NLSY97). Married is counted from the wedding, set to today's divorce levels (NLSY97 and NSFG).</figcaption>
+    </figure>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="eyebrow">Three stages, three models</div>
+      <h2>Start from where you are now</h2>
+      <p>Each stage has its own model, because what predicts a breakup changes as a relationship gets more serious.</p>
+    </div>
+    <div class="stages">
+      <article class="stage" style="--c: var(--dating)">
+        <h3>Dating</h3>
+        <div class="big">48%<small>together after 3 years</small></div>
+        <p class="what">For a typical dating couple, together about two years when first asked.</p>
+        <ul><li>How long you've been together</li><li>How the relationship feels</li><li>How you met, age, schooling</li></ul>
+        <div class="src">682 couples · HCMST 2009–2022</div>
+      </article>
+      <article class="stage" style="--c: var(--cohab)">
+        <h3>Living together</h3>
+        <div class="big">50%<small>together after 5 years</small></div>
+        <p class="what">Counted from move-in. Most of the couples who last that long have married each other by then.</p>
+        <ul><li>How long you've lived together</li><li>Earlier live-in partners</li><li>Children, schooling, age at move-in</li></ul>
+        <div class="src">11,382 couples · NLSY97, NSFG</div>
+      </article>
+      <article class="stage" style="--c: var(--married)">
+        <h3>Married</h3>
+        <div class="big">69%<small>married after 10 years</small></div>
+        <p class="what">For a typical couple marrying today. Already married? Answer a few questions about the marriage now instead.</p>
+        <ul><li>Age at the wedding, schooling</li><li>Living together first, children</li><li>Closeness and conflict, if already married</li></ul>
+        <div class="src">17,363 marriages · NLSY97, NLSY79, NSFG</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="eyebrow">What moves the odds</div>
+      <h2>Some answers matter a lot. Most matter a little.</h2>
+      <p class="legend-note">Numbers are how much the yearly odds of a breakup change, compared with otherwise similar couples.</p>
+    </div>
+    <div class="drivers">
+      <div class="driver"><div class="x up">5.9×</div><p><b>A dating relationship that feels "fair or poor."</b> How the relationship feels is the strongest sign we found, compared with couples who call theirs excellent.</p></div>
+      <div class="driver"><div class="x up">1.6×</div><p><b>Two or more earlier live-in partners</b> before moving in with this one.</p></div>
+      <div class="driver"><div class="x up">1.6×</div><p><b>A spouse with children from another relationship.</b> It was the one new signal among dozens of extra questions we tested.</p></div>
+      <div class="driver"><div class="x down">0.6×</div><p><b>A bachelor's degree</b> when moving in together, compared with a high school diploma.</p></div>
+      <div class="driver"><div class="x down">0.76×</div><p><b>Marrying since 2010</b> compared with the 2000s, for couples of the same age and background. Divorce keeps falling.</p></div>
+      <div class="driver"><div class="x flat">1.0×</div><p><b>A wife who earns more than her husband.</b> It made no difference once the husband's pay was known (PSID, 7,115 couples). A low-earning husband is the signal.</p></div>
+      <div class="driver"><div class="x flat">≈1×</div><p><b>Personality and test scores.</b> The Big Five, self-esteem and aptitude scores barely changed the predictions.</p></div>
+      <div class="driver"><div class="x flat">≈1×</div><p><b>Income at the wedding.</b> Adding earnings didn't improve the wedding-day model, except that no earnings at all raised the odds a little.</p></div>
+    </div>
+  </section>
+
+  <section class="section honest">
+    <div class="section-head" style="gap:16px">
+      <div class="eyebrow">How far to trust it</div>
+      <h2>Good at averages, modest at telling couples apart</h2>
+      <div class="points">
+        <p><b>The levels are right.</b> When the model says 30% of couples like you split up within five years, about 30% of those couples did. We checked this on people the model never saw.</p>
+        <p><b>Ranking is modest.</b> Given two couples, it picks the one that splits first about two times in three. Most of what ends a relationship isn't in a questionnaire, and that ceiling held in every survey we tried.</p>
+        <p><b>Dating is the roughest.</b> It rests on about 680 couples, so its high and low ends are less certain than the married model's.</p>
+      </div>
+    </div>
+    <div class="dial" aria-label="Accuracy by stage">
+      <div class="eyebrow">Concordance on held-out couples (0.5 = coin flip, 1 = perfect)</div>
+      <div class="row"><span>Married, wedding day</span><span class="num">0.65</span><div class="bar"><i style="width:30%"></i></div></div>
+      <div class="row"><span>Already married, with how it feels</span><span class="num">0.66</span><div class="bar"><i style="width:32%"></i></div></div>
+      <div class="row"><span>Living together</span><span class="num">0.64</span><div class="bar"><i style="width:28%"></i></div></div>
+      <div class="row"><span>Dating</span><span class="num">0.64</span><div class="bar"><i style="width:28%"></i></div></div>
+      <p class="legend-note">Bars run from 0.5 to 1.0.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div class="eyebrow">The data</div>
+      <h2>Five national surveys, followed for years</h2>
+      <p>Every survey here followed the same people over time, so the calculator learns from how relationships actually ended, not from what people guessed would happen.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Survey</th><th>Who</th><th>Used for</th><th>Size</th></tr></thead>
+        <tbody>
+          <tr><td><b>NLSY97</b><div class="sub">National Longitudinal Survey of Youth 1997</div></td><td>Born 1980–84, interviewed 1997–2023</td><td>Wedding-day and already-married models; living together</td><td class="n">6,374 marriages<br>11,382 live-ins</td></tr>
+          <tr><td><b>NLSY79</b><div class="sub">National Longitudinal Survey of Youth 1979</div></td><td>Born 1957–64, interviewed 1979–2022</td><td>The "married in the 1980s" setting and a cross-check</td><td class="n">10,989 marriages</td></tr>
+          <tr><td><b>NSFG</b><div class="sub">National Survey of Family Growth</div></td><td>Adults 15–49, 2002–2023</td><td>Bringing marriage and live-in levels up to date</td><td class="n">34,740 first marriages<br>39,278 first live-ins</td></tr>
+          <tr><td><b>HCMST</b><div class="sub">How Couples Meet and Stay Together, Stanford</div></td><td>Adults with a partner in 2009 or 2017</td><td>Dating couples</td><td class="n">5,871 couples</td></tr>
+          <tr><td><b>PSID</b><div class="sub">Panel Study of Income Dynamics</div></td><td>US families, 1985–2023</td><td>Checking earnings and "wife earns more"</td><td class="n">7,115 couples</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div>
+      <h2>See your own numbers</h2>
+      <p>It takes about two minutes. Change any answer to see what moves the result.</p>
+    </div>
+    <a class="btn" href="/calculator">Open the calculator</a>
+  </section>
+
+  <footer>
+    <p>"Splitting up" means a breakup, divorce or legal separation. A partner's death isn't counted as an ending.</p>
+    <p>This is an estimate for couples who answered like you, not a prediction about your relationship. It is not medical, legal or relationship advice.</p>
+  </footer>
+</div>
+
+<script>
+// Average share split up by year (from the calculator's own data): dating from first interview, live-in from move-in, married today from the wedding.
+const CURVES = [
+  { key: "dating", label: "Dating", color: "var(--dating)", risk: [0, 0.294, 0.468, 0.522, 0.602, 0.619, 0.663, 0.663, 0.676] },
+  { key: "cohab", label: "Living together", color: "var(--cohab)", risk: [0, 0.223, 0.334, 0.405, 0.46, 0.5, 0.53, 0.553, 0.577, 0.596, 0.611] },
+  { key: "married", label: "Married today", color: "var(--married)", risk: [0, 0.03, 0.062, 0.106, 0.143, 0.178, 0.211, 0.239, 0.264, 0.287, 0.309] },
+];
+(function draw() {
+  const svg = document.getElementById("curves");
+  const W = 520, H = 300, L = 40, R = 118, T = 12, B = 28;
+  const X = t => L + (t / 10) * (W - L - R), Y = p => T + (1 - p) * (H - T - B);
+  let g = "";
+  for (let p = 0; p <= 1.0001; p += 0.25) g += `<line x1="${L}" x2="${W - R}" y1="${Y(p)}" y2="${Y(p)}" stroke="var(--line)"/><text x="${L - 8}" y="${Y(p) + 4}" text-anchor="end">${Math.round(p * 100)}%</text>`;
+  for (const t of [0, 2, 4, 6, 8, 10]) g += `<text x="${X(t)}" y="${H - 8}" text-anchor="middle">${t}</text>`;
+  const ends = [];
+  for (const c of CURVES) {
+    const pts = c.risk.map((r, t) => [X(t), Y(1 - r)]);
+    const d = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join("");
+    let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    g += `<path class="line" d="${d}" fill="none" stroke="${c.color}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" style="--len:${Math.ceil(len)}"/>`;
+    const [ex, ey] = pts[pts.length - 1];
+    g += `<circle cx="${ex}" cy="${ey}" r="4.5" fill="${c.color}" stroke="var(--panel)" stroke-width="2"/>`;
+    ends.push({ c, ex, ey, v: 1 - c.risk[c.risk.length - 1], t: c.risk.length - 1 });
+  }
+  // labels in the right margin, kept apart vertically
+  ends.sort((a, b) => a.ey - b.ey);
+  for (let i = 1; i < ends.length; i++) if (ends[i].ey - ends[i - 1].ey < 34) ends[i].ey = ends[i - 1].ey + 34;
+  for (const e of ends) {
+    g += `<text class="lab" x="${W - R + 12}" y="${e.ey - 2}" fill="${e.c.color}" style="fill:${e.c.color}">${e.c.label}</text>`;
+    g += `<text x="${W - R + 12}" y="${e.ey + 13}">${Math.round(e.v * 100)}% at ${e.t} yr</text>`;
+  }
+  svg.innerHTML = g;
+})();
+</script>
+
+</body>
+</html>
