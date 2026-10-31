@@ -617,7 +617,7 @@ function update() {
   const half = c.findIndex(p => p >= 0.5), span = c.length - 1;
   document.getElementById("half").innerHTML = half > 0
     ? `Half of couples like this would split up within about <b>${yr(half)}</b>.`
-    : `More than half of couples like this, <b>${pct(1 - c[span])}</b>, would still be together after ${span} years.`;
+    : `<b>${pct(1 - c[span])}</b> of couples like this would still be together after ${span} years.`;
   const ratio = c[h2] / avg[h2];
   const word = ratio > 1.1 ? "higher than" : ratio < 0.9 ? "lower than" : "close to";
   let who = { D: "the average dating couple in the survey, together a median of 2½ years when first asked", C: s.cyrs > 0 ? `the average couple still living together (or married to each other) after ${s.cyrs} years` : "the average couple moving in together", now: "the average marriage today", A: "the average NLSY97 marriage", A60: "the average NLSY79 marriage", A2000: "the average survey couple married in the 2000s", Apre: "the average survey couple married before 2000", B: "the average early-married couple in NLSY97" }[key];
