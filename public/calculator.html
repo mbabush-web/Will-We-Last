@@ -92,6 +92,8 @@ input[type=range] { width: 100%; accent-color: var(--accent); }
 .stat .k { font-family: var(--mono); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .stat .v { font-family: var(--display); font-weight: 700; font-size: 44px; line-height: 1; color: var(--risk); font-variant-numeric: tabular-nums; }
 .stat .s { font-size: 12.5px; color: var(--muted); }
+.stat.last { grid-column: 1 / -1; background: var(--accent-soft); }
+.stat.last .v { color: var(--accent); }
 .compare { font-size: 13.5px; color: var(--muted); margin: 0; }
 .compare b { color: var(--ink); font-weight: 600; }
 h2 { font-family: var(--display); font-weight: 700; font-size: 17px; margin: 0; }
@@ -245,6 +247,7 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="big">
           <div class="stat"><span class="k" id="k5">Within 5 years</span><span class="v" id="r5">–</span><span class="s" id="r5s"></span></div>
           <div class="stat"><span class="k" id="k10">Within 10 years</span><span class="v" id="r10">–</span><span class="s" id="r10s"></span></div>
+          <div class="stat last"><span class="k">Likely to last</span><span class="v" id="rlast">–</span><span class="s" id="rlasts"></span></div>
         </div>
         <p class="compare" id="cmp"></p>
         <p class="compare" id="half"></p>
@@ -623,9 +626,18 @@ function update() {
   document.getElementById("r5s").textContent = `about ${Math.round(c[h1] * 100)} in 100 couples`;
   document.getElementById("r10s").textContent = `about ${Math.round(c[h2] * 100)} in 100 couples`;
   const half = c.findIndex(p => p >= 0.5), span = c.length - 1;
-  document.getElementById("half").innerHTML = half > 0
-    ? `Half of couples like this would split up within about <b>${yr(half)}</b>.`
-    : `<b>${pct(1 - c[span])}</b> of couples like this would still be together after ${span} years.`;
+  // Median length: the year half of couples like this have split, interpolated to the nearest half-year.
+  const since = from === "from now" ? "from now" : from === "of moving in" ? "from moving in" : "from the wedding";
+  if (half > 0) {
+    const t = half - 1 + (0.5 - c[half - 1]) / (c[half] - c[half - 1]), n = Math.max(0.5, Math.round(t * 2) / 2);
+    const num = `${Math.floor(n) || ""}${n % 1 ? "½" : ""}`;
+    document.getElementById("rlast").textContent = `${num} ${n > 1 ? "years" : "year"}`;
+    document.getElementById("rlasts").textContent = `${since[0].toUpperCase() + since.slice(1)}. Half of couples like this split up sooner, half later.`;
+  } else {
+    document.getElementById("rlast").textContent = `${span}+ years`;
+    document.getElementById("rlasts").textContent = `${pct(1 - c[span])} of couples like this are still together ${span} years ${since === "from now" ? "from now" : since.replace("from ", "after ")}, the longest the surveys follow.`;
+  }
+  document.getElementById("half").textContent = "";
   const ratio = c[h2] / avg[h2];
   const word = ratio > 1.1 ? "higher than" : ratio < 0.9 ? "lower than" : "close to";
   let who = { D: "the average dating couple in the survey, together a median of 2½ years when first asked", C: s.cyrs > 0 ? `the average couple still living together (or married to each other) after ${s.cyrs} years` : "the average couple moving in together", now: "the average marriage today", A: "the average NLSY97 marriage", A60: "the average NLSY79 marriage", A2000: "the average survey couple married in the 2000s", Apre: "the average survey couple married before 2000", B: "the average early-married couple in NLSY97" }[key];
