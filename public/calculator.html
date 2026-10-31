@@ -71,6 +71,11 @@ legend { font-family: var(--display); font-weight: 700; font-size: 17px; float: 
 .q > label, .q > .qlabel { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .q .val { font-family: var(--mono); font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hint { color: var(--muted); font-size: 12.5px; margin: -3px 0 0; }
+.share { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.share button { font: inherit; font-size: 14px; font-weight: 600; color: var(--panel); background: var(--accent); border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.share button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.share span { font-size: 13px; color: var(--muted); }
+.share textarea { width: 100%; font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .sel { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; max-width: 100%; }
@@ -126,7 +131,7 @@ header .lede { max-width: none; }
     <h1>Will we last?</h1>
     <p class="lede">Will your relationship last, and for how long? This calculator was built to estimate both. It isn't a personality quiz: every number comes from what actually happened to more than 34,000 real couples (married, living together and dating) whom US government and university surveys followed for up to 25 years.</p>
     <p class="lede" style="margin-top:.6em">We trained statistical survival models on those histories, checked them on couples the models had never seen, and tested them against a separate generation of marriages. Pick where you are now, answer a few questions about your background, and see the chance of splitting up over the coming years. Change any answer to see what moves the number.</p>
-    <p class="hint" style="margin-top:.4em">Built on data from US couples, so the odds are most accurate for relationships in the US. Free and private: your answers stay in your browser and are never sent anywhere.</p>
+    <p class="hint" style="margin-top:.4em">Built on data from US couples, so the odds are most accurate for relationships in the US. Free and private: your answers stay in your browser and are never sent anywhere, though you can <a href="#share">share your result</a> with anyone.</p>
     <div class="stagepick">
     <div class="modes" role="tablist" aria-label="Where you are now">
       <button type="button" role="tab" aria-selected="false" data-stage="D">Dating</button>
@@ -245,6 +250,7 @@ header .lede { max-width: none; }
         <svg id="chart" viewBox="0 0 400 210" width="100%" role="img" aria-label="Chance the relationship has ended, by years"></svg>
         <div class="legend"><span style="--sw: var(--risk)" id="this-label">This marriage</span><span style="--sw: var(--muted)" id="avg-label">Average marriage</span></div>
         <p class="hint" id="basis"></p>
+        <div class="share" id="share"><button type="button" id="share-btn">Share your result</button><span id="share-msg" role="status"></span></div>
       </div>
       <div class="card">
         <h2>Biggest what-ifs</h2>
@@ -682,6 +688,20 @@ document.getElementById("f").addEventListener("submit", e => e.preventDefault())
 document.getElementById("calibk").addEventListener("input", update);
 for (const b of document.querySelectorAll(".modes button[data-mode]")) b.addEventListener("click", () => setMode(b.dataset.mode));
 for (const b of document.querySelectorAll(".modes button[data-stage]")) b.addEventListener("click", () => setMode(b.dataset.stage));
+// Share: only the result text and the site link, never the answers.
+function shareText() {
+  const k = id => document.getElementById(id).textContent.toLowerCase().replace(/^split up /, "");
+  const v = id => document.getElementById(id).textContent;
+  return `My Will We Last odds: ${v("r5")} chance of splitting up ${k("k5")}, ${v("r10")} ${k("k10")}. See yours:`;
+}
+document.getElementById("share-btn").addEventListener("click", async () => {
+  const text = shareText(), url = "https://willwelast.app/calculator", msg = document.getElementById("share-msg");
+  if (navigator.share) { try { await navigator.share({ title: "Will We Last", text, url }); return; } catch (e) { if (e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(`${text} ${url}`); msg.textContent = "Copied. Paste it anywhere."; return; } catch (e) {}
+  let ta = document.querySelector("#share textarea");
+  if (!ta) { ta = document.createElement("textarea"); ta.rows = 3; ta.readOnly = true; document.getElementById("share").append(ta); }
+  ta.value = `${text} ${url}`; ta.select(); msg.textContent = "Copy this text to share it.";
+});
 drawTable(); setMode("A");
 
 </script>
