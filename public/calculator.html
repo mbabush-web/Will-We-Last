@@ -609,7 +609,7 @@ function update() {
   document.getElementById("gen-hint").textContent = {
     "2000": "The same couple, married in the 2000s. Set to 2000s weddings in the national NSFG survey (13,892 marriages), for couples of the same age and background.",
     pre2000: "The same couple, married in the 1970s to 1990s (NSFG, 13,633 marriages). Raw divorce rates were much higher then, 40% within 10 years for 1980s weddings, but mostly because people married younger and with less schooling. For couples of the same age and background, the risk was about the same as in the 2000s; the big drop came in the 2010s.",
-  }[s.gen] || (s.gen === "now" ? "Recent marriages are lasting longer. Of first marriages from the 2010s, 22% ended within 10 years, against 31% from the 2000s and 40% from the 1980s (national NSFG survey, 34,740 marriages). So this takes the 2000s model and lowers it to match couples who married since 2010."
+  }[s.gen] || (s.gen === "now" ? "Couples marrying since 2010 have split up less often than similar couples in earlier decades, about a quarter lower odds for the same age and background (national NSFG survey, 34,740 marriages). So this setting lowers the 2000s model to match."
     : "");
   document.getElementById("dyrs-v").textContent = s.dyrs === 0 ? "just started" : `${s.dyrs} yr`;
   document.getElementById("dage-v").textContent = `${s.dage}`;
