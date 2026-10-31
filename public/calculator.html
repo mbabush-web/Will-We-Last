@@ -609,7 +609,7 @@ function update() {
   document.getElementById("gen-hint").textContent = {
     "2000": "The same couple, married in the 2000s. Set to 2000s weddings in the national NSFG survey (13,892 marriages), for couples of the same age and background.",
     pre2000: "The same couple, married in the 1970s to 1990s (NSFG, 13,633 marriages). Raw divorce rates were much higher then, 40% within 10 years for 1980s weddings, but mostly because people married younger and with less schooling. For couples of the same age and background, the risk was about the same as in the 2000s; the big drop came in the 2010s.",
-  }[s.gen] || (s.gen === "now" ? "Couples marrying since 2010 have split up less often than similar couples in earlier decades, about a quarter lower odds for the same age and background (national NSFG survey, 34,740 marriages). Our main model learned from couples who mostly married in the 2000s, so for couples marrying now it lowers the odds by that same amount."
+  }[s.gen] || (s.gen === "now" ? "Couples marrying since 2010 have split up less often than similar couples who married in the 2000s (national NSFG survey, 34,740 marriages)."
     : "");
   document.getElementById("dyrs-v").textContent = s.dyrs === 0 ? "just started" : `${s.dyrs} yr`;
   document.getElementById("dage-v").textContent = `${s.dage}`;
@@ -626,6 +626,10 @@ function update() {
   document.getElementById("r10").textContent = pct(c[h2]);
   document.getElementById("r5s").textContent = `about ${Math.round(c[h1] * 100)} in 100 couples`;
   document.getElementById("r10s").textContent = `about ${Math.round(c[h2] * 100)} in 100 couples`;
+  if (s.mode === "A" && s.gen === "now") {
+    const old10 = curve({ ...s, gen: "2000" })[h2];
+    document.getElementById("gen-hint").textContent = `Couples marrying since 2010 have split up less often than similar couples who married in the 2000s. For couples like you, that lowers the chance of splitting up within ${h2} years from ${pct(old10)} to ${pct(c[h2])} (national NSFG survey, 34,740 marriages).`;
+  }
   const half = c.findIndex(p => p >= 0.5), span = c.length - 1;
   // Median length: the year half of couples like this have split, interpolated to the nearest half-year.
   const since = from === "from now" ? "from now" : from === "of moving in" ? "from moving in" : "from the wedding";
