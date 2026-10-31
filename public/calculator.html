@@ -251,7 +251,7 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         </div>
         <p class="compare" id="cmp"></p>
         <p class="compare" id="half"></p>
-        <svg id="chart" viewBox="0 0 400 226" width="100%" role="img" aria-label="Chance the relationship has ended, by years"></svg>
+        <svg id="chart" viewBox="0 0 400 210" width="100%" role="img" aria-label="Chance the relationship has ended, by years"></svg>
         <div class="legend"><span style="--sw: var(--risk)" id="this-label">This marriage</span><span style="--sw: var(--muted)" id="avg-label">Average marriage</span></div>
         <p class="hint" id="basis"></p>
         <div class="share" id="share"><button type="button" id="share-btn">Share your result</button><span id="share-msg" role="status"></span></div>
@@ -536,10 +536,11 @@ const avgKey = s => s.mode === "B" || s.mode === "C" || s.mode === "D" ? s.mode 
 
 function drawChart(c, avg) {
   const svg = document.getElementById("chart");
-  const W = 400, H = 226, L = 34, R = 22, T = 26, B = 26, span = c.length - 1;
+  const W = 400, H = 210, L = 50, R = 22, T = 10, B = 26, span = c.length - 1;
   const ymax = Math.min(1, Math.max(0.6, Math.ceil(Math.max(...c, ...avg) * 10) / 10));
   const X = t => L + (t / span) * (W - L - R), Y = p => T + (1 - p / ymax) * (H - T - B);
-  let g = `<text x="0" y="11" text-anchor="start" font-weight="600">Share of couples split up</text>`;
+  const ymid = (T + H - B) / 2;
+  let g = `<text x="10" y="${ymid}" transform="rotate(-90 10 ${ymid})" text-anchor="middle" font-weight="600">Share of couples split up</text>`;
   for (let p = 0; p <= ymax + 1e-9; p += 0.2) g += `<line x1="${L}" x2="${W - R}" y1="${Y(p)}" y2="${Y(p)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(p) + 4}" text-anchor="end">${Math.round(p * 100)}%</text>`;
   for (const t of span === 8 ? [0, 2, 4, 6, 8] : [0, 5, 10, 15]) g += `<text x="${X(t)}" y="${H - 8}" text-anchor="middle">${t} yr</text>`;
   const path = arr => arr.map((p, t) => `${t ? "L" : "M"}${X(t).toFixed(1)},${Y(p).toFixed(1)}`).join("");
