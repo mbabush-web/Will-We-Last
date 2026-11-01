@@ -276,7 +276,8 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         </form>
       </div>
       <div class="card">
-        <h2>Biggest what-ifs</h2>
+        <h2>What would change your odds most</h2>
+        <p class="hint" id="lev-intro"></p>
         <ul class="levers" id="levers"></ul>
         <p class="hint" style="margin-top:.8em">Will We Last is free to use. If it helped, you can <a href="https://ko-fi.com/willwelast" target="_blank" rel="noopener">buy us a coffee</a>. Questions, ideas or something look off? Email <a href="mailto:hello@willwelast.app">hello@willwelast.app</a>.</p>
         <p class="hint">© 2026 Maxim Babush · <a href="https://willwelast.app/methodology">How it works</a> · <a href="https://willwelast.app/terms">Terms and privacy</a></p>
@@ -580,7 +581,7 @@ function levers(s, base10) {
       const d = base10 - curve({ ...s, [name]: val })[HZ[s.mode][1]];
       if (!best || d > best.d) best = { d, label: `${s.mode === "C" && name === "preg" ? "Expecting when you moved in" : LABELS[name]}: ${text.toLowerCase()}` };
     }
-    if (best && best.d > 0.005) items.push(best);
+    if (best && best.d > 0) items.push(best);
   }
   const sliders = s.mode === "C" || s.mode === "D" ? [] : s.mode === "B"
     ? [["close", v => `Feeling closer (${v} of 10)`, [10]], ["cares", v => `Feeling more cared for (${v} of 10)`, [10]], ["conflict", v => `Less conflict (${v} of 10)`, [0, 2]]]
@@ -588,13 +589,15 @@ function levers(s, base10) {
   for (const [id, lab, vals] of sliders) {
     let best = null;
     for (const v of vals) { if (v === s[id]) continue; const d = base10 - curve({ ...s, [id]: v })[HZ[s.mode][1]]; if (!best || d > best.d) best = { d, label: lab(v) }; }
-    if (best && best.d > 0.005) items.push(best);
+    if (best && best.d > 0) items.push(best);
   }
-  items.sort((a, b) => b.d - a.d);
-  document.getElementById("levers").innerHTML = items.length
-    ? items.slice(0, 5).map(i => `<li><span>${i.label}</span><span class="d">−${(i.d * 100).toFixed(1)} pts</span></li>`).join("") +
-      `<li><span class="none">Change in the ${HZ[s.mode][1]}-year chance if only that one answer were different. Background answers you can't change are left out.</span><span></span></li>`
-    : `<li><span class="none">No single change lowers the ${HZ[s.mode][1]}-year chance by more than half a point.</span><span></span></li>`;
+  const h = HZ[s.mode][1];
+  const shown = items.filter(i => pct(base10 - i.d) !== pct(base10)).sort((a, b) => b.d - a.d).slice(0, 5);
+  document.getElementById("lev-intro").textContent = shown.length
+    ? `Right now, your chance of splitting up within ${h} years is ${pct(base10)}. If just one of your answers were different, it would drop to:`
+    : `Right now, your chance of splitting up within ${h} years is ${pct(base10)}. Changing any single answer you could still change would move it by less than one percentage point.`;
+  document.getElementById("levers").innerHTML = shown.map(i => `<li><span>${i.label}</span><span class="d">${pct(base10 - i.d)}</span></li>`).join("") +
+    (shown.length ? `<li><span class="none">These are averages for couples who answered that way, not a promise that making the change would cause the drop. Background answers you can't change are left out.</span><span></span></li>` : "");
 }
 
 function setMode(m) {
@@ -675,7 +678,7 @@ function update() {
     document.getElementById("basis").textContent = `Model: NLSY97 wedding-day answers for ${eraOf(s.ym) === "now" ? "2010s" : eraOf(s.ym) === "2000" ? "2000s" : "pre-2000"} weddings, counted from now for couples still married after ${s.ym} years. How the marriage feels uses the effects measured in early marriage. Beyond about 20 years the survey data get thin.`;
   }
   drawChart(c, avg);
-  levers(s, c[10]);
+  levers(s, c[HZ[s.mode][1]]);
   drawCalib(s.calibk);
 }
 
