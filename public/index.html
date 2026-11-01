@@ -642,7 +642,6 @@ function setMode(m) {
   for (const el of document.querySelectorAll("[data-show]")) el.hidden = !el.dataset.show.split(" ").includes(m);
   document.getElementById("you-legend").textContent = m === "C" ? "You, when you moved in together" : m === "D" ? "You" : m === "B" ? "You, on your wedding day" : "You, at the wedding";
   document.getElementById("age-l").textContent = m === "C" ? "Age when you moved in" : "Age at the wedding";
-  document.getElementById("preg-l").textContent = m === "C" ? "Were you or your partner pregnant when you moved in?" : m === "B" ? "Were you or your partner pregnant at the wedding?" : "Will you or your partner be pregnant at the wedding?";
   document.getElementById("prior-l").textContent = m === "C" ? "Earlier live-in partners" : "Earlier live-in partners (not this spouse)";
   const ck = document.querySelector(`input[name="calibk"][value="${m === "A" ? "A" : m}"]`); if (ck) ck.checked = true;
   const age = document.getElementById("age");
@@ -653,6 +652,9 @@ function setMode(m) {
 
 function update() {
   const s = state();
+  { const who = s.sex === "m" ? "your partner" : "you", m = s.mode;
+    document.getElementById("preg-l").textContent = m === "C" ? `Was ${who} pregnant when you moved in?` : m === "B" ? `Was ${who} pregnant at the wedding?` : `Will ${who} be pregnant at the wedding?`;
+    if (who === "you") document.getElementById("preg-l").textContent = document.getElementById("preg-l").textContent.replace(/^Was you/, "Were you"); }
   document.getElementById("age-v").textContent = `${s.age}`;
   document.getElementById("gap-v").textContent = s.gap === 0 ? "same age" : `${Math.abs(s.gap)} yr ${s.gap > 0 ? "older" : "younger"}`;
   document.getElementById("wage-v").textContent = money(s.wage);
