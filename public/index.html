@@ -93,7 +93,24 @@ legend { font-family: var(--display); font-weight: 700; font-size: 17px; float: 
 .seg label { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; cursor: pointer; background: var(--bg); color: var(--ink); user-select: none; }
 .seg input:checked + label { background: var(--accent); border-color: var(--accent); color: var(--panel); }
 .seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
-input[type=range] { width: 100%; accent-color: var(--accent); }
+.rng { --th: 22px; --p: .5; position: relative; }
+@media (pointer: coarse) { .rng { --th: 30px; } }
+.rng input[type=range] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: var(--th); margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+.rng input[type=range]:disabled { opacity: .45; cursor: default; }
+.rng input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--accent) calc(var(--th) / 2 + var(--p) * (100% - var(--th))), var(--line) 0); }
+.rng input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: var(--th); height: var(--th); margin-top: calc(3px - var(--th) / 2); border-radius: 50%; background: var(--panel); border: 3px solid var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.rng input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+.rng input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--accent); }
+.rng input[type=range]::-moz-range-thumb { box-sizing: border-box; width: var(--th); height: var(--th); border-radius: 50%; background: var(--panel); border: 3px solid var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+.rng input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.ticks { position: relative; height: 8px; margin: 2px calc(var(--th) / 2) 0; }
+.ticks i { position: absolute; top: 0; width: 1px; height: 4px; background: var(--muted); opacity: .45; transform: translateX(-.5px); }
+.ticks i.major { height: 8px; opacity: .8; }
+.tlabels { position: relative; height: 16px; margin: 1px calc(var(--th) / 2) 0; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.tlabels span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.tlabels span.first { transform: translateX(calc(var(--th) / -2)); }
+.tlabels span.last { transform: translateX(calc(-100% + var(--th) / 2)); }
+.tlabels span.on { color: var(--accent); font-weight: 700; }
 .scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); }
 
 .readout { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 16px; min-width: 0; }
@@ -213,8 +230,6 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="q" data-show="A B C">
           <label for="age"><span id="age-l">Age at the wedding</span> <span class="val" id="age-v"></span></label>
           <input type="range" id="age" min="18" max="45" step="1" value="28">
-          <div class="scale" data-show="A C"><span>18</span><span>25</span><span>35</span><span>45</span></div>
-          <div class="scale" data-show="B" hidden><span>18</span><span>23</span><span>28</span></div>
         </div>
         <div class="q"><div class="qlabel">Highest degree</div><div class="seg" id="edu"></div></div>
         <div class="q"><div class="qlabel">Married before?</div><div class="seg" id="order"></div></div>
@@ -223,7 +238,6 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="q" data-show="A B C"><div class="qlabel">How often you attend religious services</div><div class="seg" id="attend"></div></div>
         <div class="q" data-show="A"><label for="wage">Your earnings the year before the wedding <span class="val" id="wage-v"></span></label>
           <input type="range" id="wage" min="0" max="150" step="5" value="40">
-          <div class="scale"><span>$0</span><span>$75k</span><span>$150k+</span></div>
           <p class="hint">In today's dollars. Earnings barely moved the odds unless they were zero.</p></div>
       </fieldset>
 
@@ -232,7 +246,6 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="q">
           <label for="gap">Age difference <span class="val" id="gap-v"></span></label>
           <input type="range" id="gap" min="-15" max="15" step="1" value="2">
-          <div class="scale"><span>15 younger</span><span>same age</span><span>15 older</span></div>
         </div>
         <div class="q"><div class="qlabel">Spouse's schooling</div><div class="seg" id="spedu"></div></div>
       </fieldset>
@@ -618,6 +631,7 @@ function setMode(m) {
 
 function update() {
   const s = state();
+  paintRanges();
   document.getElementById("age-v").textContent = `${s.age}`;
   document.getElementById("gap-v").textContent = s.gap === 0 ? "same age" : `${Math.abs(s.gap)} yr ${s.gap > 0 ? "older" : "younger"}`;
   document.getElementById("wage-v").textContent = money(s.wage);
@@ -761,6 +775,41 @@ document.getElementById("followup").addEventListener("submit", async e => {
     msg.textContent = "Thank you. We'll be in touch in a year.";
   } catch (err) { msg.textContent = "Sorry, that didn't save. Please try again later."; btn.disabled = false; }
 });
+// Sliders: tick marks, labels and a filled track, so values are easier to judge and hit on a phone.
+const TICKS = {
+  age: { minor: 1, labels: [18, 20, 25, 30, 35, 40, 45] },
+  dage: { minor: 5, labels: [18, 30, 40, 50, 60, 75] },
+  wage: { minor: 10, labels: [0, 50, 100, 150], fmt: money },
+  rw: { minor: 10, labels: [0, 50, 100, 150], fmt: money },
+  sw: { minor: 10, labels: [0, 50, 100, 150], fmt: money },
+  gap: { minor: 1, major: 5, labels: [-15, 0, 15], fmt: v => v === 0 ? "same age" : v < 0 ? "15 younger" : "15 older" },
+  close: { minor: 1, labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  cares: { minor: 1, labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  conflict: { minor: 1, labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+  commit: { minor: 1, labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+};
+function buildRange(el) {
+  const cfg = TICKS[el.id] || { minor: +el.step || 1, labels: [+el.min, +el.max] };
+  let wrap = el.parentElement.classList.contains("rng") ? el.parentElement : null;
+  if (!wrap) { wrap = document.createElement("div"); wrap.className = "rng"; el.before(wrap); wrap.append(el); }
+  wrap.querySelectorAll(".ticks, .tlabels").forEach(n => n.remove());
+  const min = +el.min, max = +el.max, pos = v => `${((v - min) / (max - min)) * 100}%`;
+  const labels = cfg.labels.filter(v => v >= min && v <= max);
+  if (!labels.includes(max)) labels.push(max);
+  const ticks = document.createElement("div"); ticks.className = "ticks"; ticks.setAttribute("aria-hidden", "true");
+  for (let v = Math.ceil(min / cfg.minor) * cfg.minor; v <= max; v += cfg.minor) { const i = document.createElement("i"); i.style.left = pos(v); if (labels.includes(v) || (cfg.major && v % cfg.major === 0)) i.className = "major"; ticks.append(i); }
+  const lab = document.createElement("div"); lab.className = "tlabels"; lab.setAttribute("aria-hidden", "true");
+  labels.forEach((v, k) => { const s = document.createElement("span"); s.style.left = pos(v); s.dataset.v = v; s.textContent = (cfg.fmt || String)(v); if (k === 0) s.className = "first"; if (k === labels.length - 1) s.className = "last"; lab.append(s); });
+  wrap.append(ticks, lab); wrap.dataset.max = max;
+}
+function paintRanges() {
+  for (const el of document.querySelectorAll('input[type=range]')) {
+    const wrap = el.parentElement; if (!wrap.classList.contains("rng") || +wrap.dataset.max !== +el.max) buildRange(el);
+    const p = (el.value - el.min) / (el.max - el.min); el.parentElement.style.setProperty("--p", p);
+    for (const s of el.parentElement.querySelectorAll(".tlabels span")) s.classList.toggle("on", +s.dataset.v === +el.value);
+  }
+}
+document.addEventListener("input", e => { if (e.target.matches?.('input[type=range]')) paintRanges(); });
 drawTable(); setMode("A");
 
 </script>
