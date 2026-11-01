@@ -219,7 +219,7 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="q"><div class="qlabel">Highest degree</div><div class="seg" id="edu"></div></div>
         <div class="q"><div class="qlabel">Married before?</div><div class="seg" id="order"></div></div>
         <div class="q" data-show="A B C"><div class="qlabel">Children already born</div><div class="seg" id="kids"></div></div>
-        <div class="q" data-show="A B C"><div class="qlabel" id="preg-l">Expecting a baby at the wedding?</div><div class="seg" id="preg"></div></div>
+        <div class="q" data-show="A B C"><div class="qlabel" id="preg-l">Will you or your partner be pregnant at the wedding?</div><div class="seg" id="preg"></div></div>
         <div class="q" data-show="A B C"><div class="qlabel">How often you attend religious services</div><div class="seg" id="attend"></div></div>
         <div class="q" data-show="A"><label for="wage">Your earnings the year before the wedding <span class="val" id="wage-v"></span></label>
           <input type="range" id="wage" min="0" max="150" step="5" value="40">
@@ -345,7 +345,7 @@ const OPTIONS = {
   calibk: [["D", "Dating"], ["C", "Living together"], ["A", "Engaged (2000s model)"], ["A60", "Engaged (1980s model)"], ["B", "Already married"]],
 };
 const DEFAULTS = { dyrsk: "1.5", ymk: "1.5", cyrsk: "0", gen: "now", sex: "f", edu: "3", order: "0", kids: "0", preg: "0", attend: "rare", spedu: "ba", cohab: "1to3", prior: "0", bothpar: "1", mom: "hs", race: "avg", together: "1", commitk: "known", earnk: "1", calibk: "A", qual: "exc", online: "0", samesex: "0", dkids: "0" };
-const LABELS = { qual: "Relationship", edu: "Your degree", order: "First marriage", kids: "Children before the wedding", preg: "Expecting at the wedding", attend: "Religious services", spedu: "Spouse's schooling", cohab: "Living together first", prior: "Earlier live-in partners", together: "Living together now" };
+const LABELS = { qual: "Relationship", edu: "Your degree", order: "First marriage", kids: "Children before the wedding", preg: "Pregnant at the wedding", attend: "Religious services", spedu: "Spouse's schooling", cohab: "Living together first", prior: "Earlier live-in partners", together: "Living together now" };
 const LEVER_KEYS = { A: ["edu", "order", "kids", "preg", "attend", "spedu", "cohab", "prior"], B: ["attend", "together"], C: ["edu", "prior", "attend"], D: ["qual"] };
 
 for (const [name, opts] of Object.entries(OPTIONS)) {
@@ -579,7 +579,7 @@ function levers(s, base10) {
     for (const [val, text] of OPTIONS[name]) {
       if (val === s[name] || val === "unk") continue;
       const d = base10 - curve({ ...s, [name]: val })[HZ[s.mode][1]];
-      if (!best || d > best.d) best = { d, label: `${s.mode === "C" && name === "preg" ? "Expecting when you moved in" : LABELS[name]}: ${text.toLowerCase()}` };
+      if (!best || d > best.d) best = { d, label: `${s.mode === "C" && name === "preg" ? "Pregnant when you moved in" : LABELS[name]}: ${text.toLowerCase()}` };
     }
     if (best && best.d > 0) items.push(best);
   }
@@ -607,7 +607,7 @@ function setMode(m) {
   for (const el of document.querySelectorAll("[data-show]")) el.hidden = !el.dataset.show.split(" ").includes(m);
   document.getElementById("you-legend").textContent = m === "C" ? "You, when you moved in together" : m === "D" ? "You" : m === "B" ? "You, on your wedding day" : "You, at the wedding";
   document.getElementById("age-l").textContent = m === "C" ? "Age when you moved in" : "Age at the wedding";
-  document.getElementById("preg-l").textContent = m === "C" ? "Expecting a baby when you moved in?" : "Expecting a baby at the wedding?";
+  document.getElementById("preg-l").textContent = m === "C" ? "Were you or your partner pregnant when you moved in?" : m === "B" ? "Were you or your partner pregnant at the wedding?" : "Will you or your partner be pregnant at the wedding?";
   document.getElementById("prior-l").textContent = m === "C" ? "Earlier live-in partners" : "Earlier live-in partners (not this spouse)";
   const ck = document.querySelector(`input[name="calibk"][value="${m === "A" ? "A" : m}"]`); if (ck) ck.checked = true;
   const age = document.getElementById("age");
