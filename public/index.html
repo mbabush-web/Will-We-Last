@@ -71,6 +71,16 @@ legend { font-family: var(--display); font-weight: 700; font-size: 17px; float: 
 .q > label, .q > .qlabel { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .q .val { font-family: var(--mono); font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hint { color: var(--muted); font-size: 12.5px; margin: -3px 0 0; }
+.reveal { gap: 12px; }
+#res-card { scroll-margin-top: 16px; }
+.reveal h2 { margin: 0; }
+.reveal p { margin: 0; }
+.reveal button { justify-self: start; font: inherit; font-size: 16px; font-weight: 700; color: var(--panel); background: var(--accent); border: 0; border-radius: 999px; padding: 12px 24px; cursor: pointer; }
+.reveal button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+body:not(.revealed) #res-card, body:not(.revealed) .res { display: none; }
+body.revealed #reveal { display: none; }
+@media (max-width: 860px) { body:not(.revealed) .readout { order: 0; } }
+@media (prefers-reduced-motion: no-preference) { body.revealed #res-card { animation: rise .45s ease-out; } @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } } }
 .share { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .share button { font: inherit; font-size: 14px; font-weight: 600; color: var(--panel); background: var(--accent); border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
 .share button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -271,7 +281,12 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
     </form>
 
     <aside class="readout" aria-live="polite">
-      <div class="card">
+      <div class="card reveal" id="reveal">
+        <h2>Your odds</h2>
+        <p class="hint">Answer the questions about your relationship, then see how couples like yours fared. After that, change any answer to see what moves the number.</p>
+        <button type="button" id="reveal-btn">See your odds</button>
+      </div>
+      <div class="card" id="res-card">
         <div class="big">
           <div class="stat last"><span class="k">Typical relationship length</span><span class="v" id="rlast">–</span><span class="s" id="rlasts"></span></div>
           <div class="stat"><span class="k" id="k5">Within 5 years</span><span class="v" id="r5">–</span><span class="s" id="r5s"></span></div>
@@ -293,9 +308,9 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         </form>
       </div>
       <div class="card">
-        <h2>What would change your odds most</h2>
-        <p class="hint" id="lev-intro"></p>
-        <ul class="levers" id="levers"></ul>
+        <h2 class="res">What would change your odds most</h2>
+        <p class="hint res" id="lev-intro"></p>
+        <ul class="levers res" id="levers"></ul>
         <p class="hint" style="margin-top:.8em">Will We Last is free to use. If it helped, you can <a href="https://ko-fi.com/willwelast" target="_blank" rel="noopener">buy us a coffee</a>. Questions, ideas or something look off? Email <a href="mailto:hello@willwelast.app">hello@willwelast.app</a>.</p>
         <p class="hint">© 2026 Maxim Babush · <a href="https://willwelast.app/methodology">How it works</a> · <a href="https://willwelast.app/terms">Terms and privacy</a></p>
       </div>
@@ -820,6 +835,15 @@ function paintRanges() {
   }
 }
 document.addEventListener("input", e => { if (e.target.matches?.('input[type=range]')) paintRanges(); });
+// Results stay hidden until the person asks to see them, then update live as answers change.
+function reveal() {
+  if (document.body.classList.contains("revealed")) return;
+  document.body.classList.add("revealed");
+  const card = document.getElementById("res-card");
+  if (card.getBoundingClientRect().top < 0 || card.getBoundingClientRect().top > innerHeight * 0.6) card.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+}
+document.getElementById("reveal-btn").addEventListener("click", reveal);
+for (const a of document.querySelectorAll('a[href="#share"], a[href="#followup"]')) a.addEventListener("click", reveal);
 drawTable(); setMode("A");
 
 </script>
