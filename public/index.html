@@ -71,14 +71,15 @@ legend { font-family: var(--display); font-weight: 700; font-size: 17px; float: 
 .q > label, .q > .qlabel { font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 .q .val { font-family: var(--mono); font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hint { color: var(--muted); font-size: 12.5px; margin: -3px 0 0; }
-.reveal { gap: 12px; }
+#res-card { position: relative; }
+.reveal { position: absolute; z-index: 2; top: 56%; left: 50%; transform: translate(-50%, -50%); width: min(340px, calc(100% - 36px)); display: grid; gap: 10px; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 18px; box-shadow: 0 10px 30px rgba(20, 20, 40, .18); }
 #res-card { scroll-margin-top: 16px; }
 .reveal h2 { margin: 0; }
 .reveal p { margin: 0; }
-.reveal button { justify-self: start; font: inherit; font-size: 16px; font-weight: 700; color: var(--panel); background: var(--accent); border: 0; border-radius: 999px; padding: 12px 24px; cursor: pointer; }
+.reveal button { justify-self: center; font: inherit; font-size: 16px; font-weight: 700; color: var(--panel); background: var(--accent); border: 0; border-radius: 999px; padding: 12px 24px; cursor: pointer; }
 .reveal button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-#res-card, .res { transition: opacity .35s; }
-body:not(.revealed) #res-card, body:not(.revealed) .res { opacity: .5; pointer-events: none; user-select: none; }
+#res-card > *, .res { transition: opacity .35s; }
+body:not(.revealed) #res-card > :not(#reveal), body:not(.revealed) .res { opacity: .5; pointer-events: none; user-select: none; }
 body:not(.revealed) .stat .v { filter: blur(8.1px); }
 body:not(.revealed) .stat .s { filter: blur(3.6px); }
 body:not(.revealed) #cmp, body:not(.revealed) #half, body:not(.revealed) #chart, body:not(.revealed) .legend, body:not(.revealed) #lev-intro, body:not(.revealed) #levers { filter: blur(5px); }
@@ -283,12 +284,12 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
     </form>
 
     <aside class="readout" aria-live="polite">
-      <div class="card reveal" id="reveal">
-        <h2>Your odds</h2>
-        <p class="hint">Answer the questions about your relationship, then see how couples like yours fared. After that, change any answer to see what moves the number.</p>
-        <button type="button" id="reveal-btn">See your odds</button>
-      </div>
       <div class="card" id="res-card">
+        <div class="reveal" id="reveal">
+          <h2>Your odds</h2>
+          <p class="hint">Answer the questions about your relationship, then see how couples like yours fared. After that, change any answer to see what moves the number.</p>
+          <button type="button" id="reveal-btn">See your odds</button>
+        </div>
         <div class="big">
           <div class="stat last"><span class="k">Typical relationship length</span><span class="v" id="rlast">–</span><span class="s" id="rlasts"></span></div>
           <div class="stat"><span class="k" id="k5">Within 5 years</span><span class="v" id="r5">–</span><span class="s" id="r5s"></span></div>
