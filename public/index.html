@@ -79,6 +79,9 @@ legend { font-family: var(--display); font-weight: 700; font-size: 17px; float: 
 .reveal button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 #res-card, .res { transition: opacity .35s; }
 body:not(.revealed) #res-card, body:not(.revealed) .res { opacity: .5; pointer-events: none; user-select: none; }
+body:not(.revealed) .stat .v, body:not(.revealed) .stat .s { visibility: hidden; position: relative; }
+body:not(.revealed) .stat .v::after { content: "?"; visibility: visible; position: absolute; left: 0; top: 0; }
+body:not(.revealed) #cmp, body:not(.revealed) #half, body:not(.revealed) #chart, body:not(.revealed) .legend, body:not(.revealed) #lev-intro, body:not(.revealed) #levers { filter: blur(5px); }
 body.revealed #reveal { display: none; }
 .share { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .share button { font: inherit; font-size: 14px; font-weight: 600; color: var(--panel); background: var(--accent); border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
