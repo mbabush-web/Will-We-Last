@@ -300,6 +300,7 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <svg id="chart" viewBox="0 0 400 210" width="100%" role="img" aria-label="Chance the relationship has ended, by years"></svg>
         <div class="legend"><span style="--sw: var(--risk)" id="this-label">This marriage</span><span style="--sw: var(--muted)" id="avg-label">Average marriage</span></div>
         <p class="hint" id="basis"></p>
+        <p class="hint">How accurate is this? Across thousands of couples, the odds match what actually happened, but no model can tell for sure which couples will last. <a href="https://willwelast.app/methodology#accuracy">See how we checked</a>.</p>
         <div class="share" id="share"><button type="button" id="share-btn">Share your result</button><span id="share-msg" role="status"></span></div>
         <form class="followup" id="followup" hidden novalidate>
           <h3>Help us check our accuracy</h3>
@@ -320,32 +321,6 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
     </aside>
   </div>
 
-  <section class="card">
-    <h2>How far to trust it</h2>
-    <div class="notes">
-      <div style="display:grid; gap:10px; min-width:0">
-        <p><b>Calibration.</b> When a model says 20%, about 20% of those couples split up. Each dot is a tenth of couples sorted by risk (a fifth for dating), using predictions from 5-fold cross-validation (the model never saw those people) and Kaplan–Meier for what happened.</p>
-        <div class="seg" id="calibk"></div>
-        <svg id="calib" viewBox="0 0 360 240" width="100%" role="img" aria-label="Predicted versus observed risk"></svg>
-        <div class="legend" id="calib-legend"><span style="--sw: var(--accent)">5 years</span><span style="--sw: var(--risk)">10 years</span></div>
-      </div>
-      <div style="display:grid; gap:10px; min-width:0">
-        <div class="tablewrap"><table id="mt"></table></div>
-        <ul>
-          <li><b>Dating is the roughest estimate.</b> About 680 couples who were dating when first asked, in 2009 or 2017, so the ranking (concordance 0.64) is decent but the high and low ends are shakier than for marriages. About 6 in 10 had split up within five years. How the relationship felt at the start mattered most: "fair or poor" went with about five times the yearly odds of "excellent".</li>
-          <li><b>Living together splits sooner, then settles.</b> Of NLSY97 couples who moved in together, 22% split within a year and 53% within five; by five years, most of the couples still together had married each other. Earlier live-in partners raised the odds (1.6 times for two or more); a bachelor's degree lowered them. In the national NSFG survey, couples who moved in since 2010 split as often in the first year as 2000s couples but less often after that (0.79 times the yearly odds), so the model is lowered after the first year.</li>
-          <li><b>It ranks couples modestly.</b> A concordance near 0.65 means the model gives the higher risk to the marriage that ended first about 65% of the time. Most of what ends a marriage isn't in these questions.</li>
-          <li><b>Marrying now is the default for weddings.</b> Divorce keeps falling. In the national NSFG survey, 21.7% of women's first marriages from the 2010s ended within 10 years, against 30.7% for 2000s weddings and 40.0% for 1980s weddings. Comparing like with like, recent weddings have about three quarters the odds, so this setting lowers the NLSY97 model by that much for the share of its weddings that came before 2010.</li>
-          <li><b>Pick your generation.</b> Marriages of people born around 1960 broke up less often, and remarriages in that generation were barely riskier than first marriages. The NLSY97 model overstated their odds by 10 to 20 points, so the 1960 setting uses a model fit on NLSY79.</li>
-          <li><b>The 1960 setting only knows the background questions.</b> NLSY79 didn't ask about living together, religious services, earlier partners or the spouse in the same way, so those answers borrow the NLSY97 effects and are centered so they don't shift the average.</li>
-          <li><b>Earnings did almost nothing.</b> Adding earnings didn't improve the wedding-day model; only having no earnings at all raised the odds a little. A wife earning more than her husband looked riskier in NLSY97, but in 7,115 PSID couples it made no difference once his pay was known. A low-earning husband is the signal, not a high-earning wife.</li>
-          <li><b>Personality and test scores added nothing.</b> The Big Five, self-esteem, locus of control and aptitude scores barely moved the concordance. The one new signal was a spouse with children from another relationship, which went with about 1.6 times the odds.</li>
-          <li><b>How the marriage feels says less than you'd think.</b> Closeness, care, conflict and commitment, asked early in the marriage, raised the concordance only from 0.65 to 0.66. Not living with your spouse was the strongest current sign.</li>
-          <li><b>"Divorce" includes legal separation</b> in NLSY97, dated to when it began. NLSY79 dates the end of the marriage as reported.</li>
-        </ul>
-      </div>
-    </div>
-  </section>
 </div>
 
 <script>
@@ -377,7 +352,6 @@ const OPTIONS = {
   online: [["0", "No"], ["1", "Yes"]],
   samesex: [["0", "No"], ["1", "Yes"]],
   dkids: [["0", "No"], ["1", "Yes"]],
-  calibk: [["D", "Dating"], ["C", "Living together"], ["A", "Engaged (2000s model)"], ["A60", "Engaged (1980s model)"], ["B", "Already married"]],
 };
 const DEFAULTS = { dyrsk: "1.5", ymk: "1.5", cyrsk: "0", gen: "now", sex: "f", edu: "3", order: "0", kids: "0", preg: "0", attend: "rare", spedu: "ba", cohab: "1to3", prior: "0", bothpar: "1", mom: "hs", race: "avg", together: "1", commitk: "known", earnk: "1", calibk: "A", qual: "exc", online: "0", samesex: "0", dkids: "0" };
 const LABELS = { qual: "Relationship", edu: "Your degree", order: "First marriage", kids: "Children before the wedding", preg: "Pregnant at the wedding", attend: "Religious services", spedu: "Spouse's schooling", cohab: "Living together first", prior: "Earlier live-in partners", together: "Living together now" };
@@ -643,7 +617,6 @@ function setMode(m) {
   document.getElementById("you-legend").textContent = m === "C" ? "You, when you moved in together" : m === "D" ? "You" : m === "B" ? "You, on your wedding day" : "You, at the wedding";
   document.getElementById("age-l").textContent = m === "C" ? "Age when you moved in" : "Age at the wedding";
   document.getElementById("prior-l").textContent = m === "C" ? "Earlier live-in partners" : "Earlier live-in partners (not this spouse)";
-  const ck = document.querySelector(`input[name="calibk"][value="${m === "A" ? "A" : m}"]`); if (ck) ck.checked = true;
   const age = document.getElementById("age");
   age.max = 45;
   if (+age.value > +age.max) age.value = age.max;
@@ -720,55 +693,11 @@ function update() {
   }
   drawChart(c, avg);
   levers(s, c[HZ[s.mode][1]]);
-  drawCalib(s.calibk);
   paintRanges();
-}
-
-function drawCalib(key) {
-  const svg = document.getElementById("calib");
-  const W = 360, H = 240, L = 40, R = 12, T = 10, B = 30, max = key === "C" || key === "D" ? 1 : 0.7;
-  const X = p => L + (p / max) * (W - L - R), Y = p => T + (1 - p / max) * (H - T - B);
-  let g = "";
-  for (let p = 0; p <= max + 1e-9; p += 0.1) {
-    g += `<line x1="${L}" x2="${W - R}" y1="${Y(p)}" y2="${Y(p)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(p) + 4}" text-anchor="end">${Math.round(p * 100)}%</text>`;
-    g += `<text x="${X(p)}" y="${H - 14}" text-anchor="middle">${Math.round(p * 100)}</text>`;
-  }
-  g += `<text x="${(L + W - R) / 2}" y="${H - 1}" text-anchor="middle">predicted (%)</text>`;
-  g += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(max)}" y2="${Y(max)}" stroke="var(--muted)" stroke-dasharray="4 4"/>`;
-  const hs = key === "D" ? [12, 60] : [60, 120];
-  document.getElementById("calib-legend").innerHTML = `<span style="--sw: var(--accent)">${hs[0] / 12} year${hs[0] > 12 ? "s" : ""}</span><span style="--sw: var(--risk)">${hs[1] / 12} years</span>`;
-  for (const [h, col] of [[hs[0], "var(--accent)"], [hs[1], "var(--risk)"]]) {
-    const pts = DATA.calibration[key].filter(r => r.horizon_m === h);
-    g += `<path d="${pts.map((r, i) => `${i ? "L" : "M"}${X(r.predicted)},${Y(r.observed)}`).join("")}" fill="none" stroke="${col}" stroke-width="1.5" opacity=".6"/>`;
-    for (const r of pts) g += `<circle cx="${X(r.predicted)}" cy="${Y(r.observed)}" r="3.5" fill="${col}"><title>predicted ${pct(r.predicted)}, observed ${pct(r.observed)} (${r.n} couples)</title></circle>`;
-  }
-  svg.innerHTML = g;
-}
-
-function drawTable() {
-  const m = DATA.metrics;
-  const rows = [
-    ["Living together, from move-in (NLSY97)", m.C],
-    ["Wedding day, born ~1980 (NLSY97)", m.A],
-    ["Same, without earnings", m.A_no_income],
-    ["Wedding day, born ~1960 (NLSY79)", m.A60],
-    ["NLSY97 model used on NLSY79 as is", m.A_core97_on_NLSY79],
-    ["Already married (NLSY97)", m.B],
-    ["Same, without the feelings questions", m.B_without_quality],
-  ];
-  const f = v => v.toFixed(2), p = v => `${(v * 100).toFixed(1)}`;
-  let h = `<thead><tr><th>Held-out test</th><th>Concordance</th><th>Pred. 10y</th><th>Obs. 10y</th><th>Avg. miss</th></tr></thead><tbody>`;
-  h += `<tr><td>Dating (HCMST), 5 years</td><td>${f(m.D["5y"].c_index)}</td><td>${p(m.D["5y"].mean_pred)}%</td><td>${p(m.D["5y"].observed)}%</td><td>${p(m.D["5y"].mean_abs_calib_error)} pts</td></tr>`;
-  for (const [name, r] of rows) h += `<tr><td>${name}</td><td>${f(r["10y"].c_index)}</td><td>${p(r["10y"].mean_pred)}%</td><td>${p(r["10y"].observed)}%</td><td>${p(r["10y"].mean_abs_calib_error)} pts</td></tr>`;
-  h += `</tbody>`;
-  const sub = DATA.subgroups.filter(r => r.horizon === 10 && ["A", "A60", "A_core97_on_NLSY79"].includes(r.model) && r.group.startsWith("re"));
-  h += `<tbody><tr><th colspan="5">Remarriages, 10 years</th></tr>` + sub.map(r => `<tr><td>${{ A: "NLSY97 model on NLSY97", A60: "NLSY79 model on NLSY79", A_core97_on_NLSY79: "NLSY97 model on NLSY79" }[r.model]}</td><td></td><td>${p(r.predicted)}%</td><td>${p(r.observed)}%</td><td>${p(Math.abs(r.predicted - r.observed))} pts</td></tr>`).join("") + `</tbody>`;
-  document.getElementById("mt").innerHTML = h;
 }
 
 document.getElementById("f").addEventListener("input", update);
 document.getElementById("f").addEventListener("submit", e => e.preventDefault());
-document.getElementById("calibk").addEventListener("input", update);
 for (const b of document.querySelectorAll(".modes button[data-mode]")) b.addEventListener("click", () => setMode(b.dataset.mode));
 for (const b of document.querySelectorAll(".modes button[data-stage]")) b.addEventListener("click", () => setMode(b.dataset.stage));
 // Share: only the result text and the site link, never the answers.
@@ -849,7 +778,7 @@ function reveal() {
 }
 document.getElementById("reveal-btn").addEventListener("click", reveal);
 for (const a of document.querySelectorAll('a[href="#share"], a[href="#followup"]')) a.addEventListener("click", reveal);
-drawTable(); setMode("A");
+setMode("A");
 
 </script>
 </body>
