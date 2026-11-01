@@ -93,7 +93,11 @@ legend { font-family: var(--display); font-weight: 700; font-size: 17px; float: 
 .seg label { border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; cursor: pointer; background: var(--bg); color: var(--ink); user-select: none; }
 .seg input:checked + label { background: var(--accent); border-color: var(--accent); color: var(--panel); }
 .seg input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
-.rng { --th: 22px; --p: .5; position: relative; }
+.rng { --th: 22px; --p: .5; position: relative; padding-top: 24px; }
+.rng .bubble { position: absolute; top: 0; left: calc(var(--th) / 2 + var(--p) * (100% - var(--th))); transform: translateX(-50%); background: var(--accent); color: var(--panel); font-family: var(--mono); font-size: 12px; font-weight: 700; line-height: 1; padding: 4px 7px; border-radius: 6px; white-space: nowrap; pointer-events: none; }
+.rng .bubble::after { content: ""; position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%); border: 4px solid transparent; border-bottom: 0; border-top-color: var(--accent); }
+.rng input[type=range]:disabled ~ .bubble { opacity: .45; }
+.q:has(.rng) label > .val { display: none; }
 @media (pointer: coarse) { .rng { --th: 30px; } }
 .rng input[type=range] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: var(--th); margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
 .rng input[type=range]:disabled { opacity: .45; cursor: default; }
@@ -631,7 +635,6 @@ function setMode(m) {
 
 function update() {
   const s = state();
-  paintRanges();
   document.getElementById("age-v").textContent = `${s.age}`;
   document.getElementById("gap-v").textContent = s.gap === 0 ? "same age" : `${Math.abs(s.gap)} yr ${s.gap > 0 ? "older" : "younger"}`;
   document.getElementById("wage-v").textContent = money(s.wage);
@@ -694,6 +697,7 @@ function update() {
   drawChart(c, avg);
   levers(s, c[HZ[s.mode][1]]);
   drawCalib(s.calibk);
+  paintRanges();
 }
 
 function drawCalib(key) {
@@ -800,12 +804,14 @@ function buildRange(el) {
   for (let v = Math.ceil(min / cfg.minor) * cfg.minor; v <= max; v += cfg.minor) { const i = document.createElement("i"); i.style.left = pos(v); if (labels.includes(v) || (cfg.major && v % cfg.major === 0)) i.className = "major"; ticks.append(i); }
   const lab = document.createElement("div"); lab.className = "tlabels"; lab.setAttribute("aria-hidden", "true");
   labels.forEach((v, k) => { const s = document.createElement("span"); s.style.left = pos(v); s.dataset.v = v; s.textContent = (cfg.fmt || String)(v); if (k === 0) s.className = "first"; if (k === labels.length - 1) s.className = "last"; lab.append(s); });
-  wrap.append(ticks, lab); wrap.dataset.max = max;
+  const bub = document.createElement("div"); bub.className = "bubble"; bub.setAttribute("aria-hidden", "true");
+  wrap.append(bub, ticks, lab); wrap.dataset.max = max;
 }
 function paintRanges() {
   for (const el of document.querySelectorAll('input[type=range]')) {
     const wrap = el.parentElement; if (!wrap.classList.contains("rng") || +wrap.dataset.max !== +el.max) buildRange(el);
     const p = (el.value - el.min) / (el.max - el.min); el.parentElement.style.setProperty("--p", p);
+    const shown = document.getElementById(`${el.id}-v`); el.parentElement.querySelector(".bubble").textContent = shown && shown.textContent ? shown.textContent : el.value;
     for (const s of el.parentElement.querySelectorAll(".tlabels span")) s.classList.toggle("on", +s.dataset.v === +el.value);
   }
 }
