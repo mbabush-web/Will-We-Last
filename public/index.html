@@ -665,9 +665,13 @@ function update() {
   document.getElementById("r10").textContent = pct(c[h2]);
   document.getElementById("r5s").textContent = `about ${Math.round(c[h1] * 100)} in 100 couples`;
   document.getElementById("r10s").textContent = `about ${Math.round(c[h2] * 100)} in 100 couples`;
-  if (s.mode === "A" && s.gen === "now") {
-    const old10 = curve({ ...s, gen: "2000" })[h2];
-    document.getElementById("gen-hint").textContent = `Couples marrying since 2010 have split up less often than similar couples who married in the 2000s. For couples like you, that lowers the chance of splitting up within ${h2} years from ${pct(old10)} to ${pct(c[h2])} (national NSFG survey, 34,740 marriages).`;
+  if (s.mode === "A") {
+    const at = g => curve({ ...s, gen: g })[h2];
+    document.getElementById("gen-hint").textContent = s.gen === "now"
+      ? `Couples marrying since 2010 have split up less often than similar couples who married in the 2000s. For couples like you, that lowers the chance of splitting up within ${h2} years from ${pct(at("2000"))} to ${pct(c[h2])} (national NSFG survey, 34,740 marriages).`
+      : s.gen === "2000"
+      ? `This shows how a couple with your answers fared if they married in the 2000s: a ${pct(c[h2])} chance of splitting up within ${h2} years, compared with ${pct(at("now"))} for a couple like you marrying today (national NSFG survey, 13,892 marriages from the 2000s).`
+      : `This shows how a couple with your answers fared if they married in the 1970s to 1990s: a ${pct(c[h2])} chance of splitting up within ${h2} years, about the same as in the 2000s (${pct(at("2000"))}) and higher than today (${pct(at("now"))}). Divorce was far more common back then overall, about 40% within 10 years for 1980s weddings, but mostly because people married younger and with less schooling (national NSFG survey, 13,633 marriages).`;
   }
   const half = c.findIndex(p => p >= 0.5), span = c.length - 1;
   // Median length: the year half of couples like this have split, interpolated to the nearest half-year.
