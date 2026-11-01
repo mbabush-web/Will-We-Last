@@ -76,6 +76,17 @@ legend { font-family: var(--display); font-weight: 700; font-size: 17px; float: 
 .share button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .share span { font-size: 13px; color: var(--muted); }
 .share textarea { width: 100%; font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; }
+.followup { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
+.followup[hidden] { display: none; }
+.followup h3 { font-family: var(--display); font-size: 16px; margin: 0; }
+.followup p { margin: 0; font-size: 13.5px; color: var(--muted); }
+.followup .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.followup input[type="email"] { flex: 1 1 200px; min-width: 0; font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; }
+.followup button { font: inherit; font-size: 14px; font-weight: 600; color: var(--panel); background: var(--accent); border: 0; border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.followup button:disabled { opacity: .6; cursor: default; }
+.followup label.consent { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--muted); }
+.followup label.consent input { margin-top: 2px; }
+.followup .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .sel { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; max-width: 100%; }
@@ -134,7 +145,7 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
     <h1>Will we last?</h1>
     <p class="lede">Will your relationship last, and for how long? This calculator was built to estimate both. It isn't a personality quiz: every number comes from what actually happened to more than 34,000 real couples (married, living together and dating), combined from five major national research surveys that followed them for up to 25 years.</p>
     <p class="lede" style="margin-top:.6em">We trained statistical survival models on those histories, checked them on couples the models had never seen, and tested them against a separate generation of marriages. Pick where you are now, answer a few questions about your background, and see the chance of splitting up over the coming years. Change any answer to see what moves the number.</p>
-    <p class="hint" style="margin-top:.4em">Built on data from US couples, so the odds are most accurate for relationships in the US.<br>Free and private: your answers stay in your browser and are never sent anywhere, though you can <a href="#share">share your result</a> with anyone.<br>Want the details? <a href="https://willwelast.app/methodology">See how it works</a>.</p>
+    <p class="hint" style="margin-top:.4em">Built on data from US couples, so the odds are most accurate for relationships in the US.<br>Free and private: your answers stay in your browser and are never sent anywhere, unless you choose to join our follow-up. You can also <a href="#share">share your result</a> with anyone.<br>Want the details? <a href="https://willwelast.app/methodology">See how it works</a>.</p>
     <div class="stagepick">
     <div class="modes" role="tablist" aria-label="Where you are now">
       <button type="button" role="tab" aria-selected="false" data-stage="D">Dating</button>
@@ -255,6 +266,14 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="legend"><span style="--sw: var(--risk)" id="this-label">This marriage</span><span style="--sw: var(--muted)" id="avg-label">Average marriage</span></div>
         <p class="hint" id="basis"></p>
         <div class="share" id="share"><button type="button" id="share-btn">Share your result</button><span id="share-msg" role="status"></span></div>
+        <form class="followup" id="followup" hidden novalidate>
+          <h3>Help us check our accuracy</h3>
+          <p>Leave your email and we'll check in twice, in one year and in three years, with one quick question: are you still together? It's the only way to test these odds on real people.</p>
+          <div class="row"><input type="email" id="fu-email" placeholder="you@example.com" autocomplete="email" aria-label="Email"><button type="submit" id="fu-btn">Count me in</button></div>
+          <label class="consent"><input type="checkbox" id="fu-consent"> <span>Store my email, answers and result for this follow-up. I can ask for them to be deleted any time at hello@willwelast.app.</span></label>
+          <div class="hp" aria-hidden="true"><label>Website <input type="text" id="fu-website" tabindex="-1" autocomplete="off"></label></div>
+          <p id="fu-msg" role="status"></p>
+        </form>
       </div>
       <div class="card">
         <h2>Biggest what-ifs</h2>
@@ -720,6 +739,24 @@ document.getElementById("share-btn").addEventListener("click", async () => {
   let ta = document.querySelector("#share textarea");
   if (!ta) { ta = document.createElement("textarea"); ta.rows = 3; ta.readOnly = true; document.getElementById("share").append(ta); }
   ta.value = `${text} ${url}`; ta.select(); msg.textContent = "Copy this text to share it.";
+});
+// Follow-up opt-in: the only place answers ever leave the browser, and only after the person ticks consent.
+// Shown only where the site's own storage is connected (never in previews or saved copies).
+if (location.protocol.startsWith("http")) fetch("/api/status").then(r => r.ok ? r.json() : {}).then(d => { if (d.followup) document.getElementById("followup").hidden = false; }).catch(() => {});
+document.getElementById("followup").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = document.getElementById("fu-email").value.trim(), msg = document.getElementById("fu-msg"), btn = document.getElementById("fu-btn");
+  if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) { msg.textContent = "Please enter a valid email."; return; }
+  if (!document.getElementById("fu-consent").checked) { msg.textContent = "Please tick the box so we can store this for the follow-up."; return; }
+  const s = state(), v = id => document.getElementById(id).textContent;
+  const result = { [v("k5")]: v("r5"), [v("k10")]: v("r10"), typical: v("rlast") };
+  btn.disabled = true; msg.textContent = "Saving…";
+  try {
+    const r = await fetch("/api/followup", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email, consent: true, stage: s.mode, answers: s, result, website: document.getElementById("fu-website").value }) });
+    if (!r.ok) throw new Error(r.status);
+    msg.textContent = "Thank you. We'll be in touch in a year.";
+  } catch (err) { msg.textContent = "Sorry, that didn't save. Please try again later."; btn.disabled = false; }
 });
 drawTable(); setMode("A");
 

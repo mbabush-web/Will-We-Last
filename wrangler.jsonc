@@ -1,9 +1,14 @@
 {
   "name": "will-we-last",
   "compatibility_date": "2026-10-01",
-  // Static site: everything in public/ is served as-is; /calculator serves calculator.html
+  // Static site in public/; the small Worker in src/ only handles /api/* (the opt-in accuracy follow-up).
+  "main": "src/worker.js",
   "assets": {
     "directory": "./public",
-    "html_handling": "auto-trailing-slash"
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "run_worker_first": ["/api/*"]
   }
+  // To switch the follow-up on, add the D1 database:
+  // "d1_databases": [{ "binding": "DB", "database_name": "will-we-last", "database_id": "<id from Cloudflare>" }]
 }
