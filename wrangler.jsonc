@@ -10,5 +10,7 @@
     "run_worker_first": ["/api/*"]
   },
   // Storage for the opt-in follow-up (table "followups" is created on first sign-up)
+  // Daily at 15:00 UTC: send check-in emails that have fallen due (needs the RESEND_API_KEY secret)
+  "triggers": { "crons": ["0 15 * * *"] },
   "d1_databases": [{ "binding": "DB", "database_name": "will-we-last", "database_id": "6e98eb2c-790e-4197-8e81-86803155c33e" }]
 }
