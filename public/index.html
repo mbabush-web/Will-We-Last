@@ -99,6 +99,8 @@ body.revealed #reveal { display: none; }
 .followup button:disabled { opacity: .6; cursor: default; }
 .followup label.consent { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--muted); }
 .followup label.consent input { margin-top: 2px; }
+#ex-qs { display: grid; gap: 12px; }
+#ex-qs .ql { font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
 .followup .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
@@ -285,6 +287,13 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
           <label class="consent"><input type="checkbox" id="fu-consent"> <span>I'm 18 or older. Store my email, answers and result and send me these check-ins. They're used only to check and improve the odds and in anonymous totals for research, never sold or shared. Every email has a link to stop them or delete everything.</span></label>
           <div class="hp" aria-hidden="true"><label>Website <input type="text" id="fu-website" tabindex="-1" autocomplete="off"></label></div>
           <p id="fu-msg" role="status"></p>
+        </form>
+        <form class="followup" id="extras" hidden novalidate>
+          <h3>Help us improve (optional)</h3>
+          <p>A few quick taps about how things are now. They don't change your odds. Other studies have found these matter, but the surveys behind our numbers never asked them, so your answers and check-ins let us test them. Skip any you like.</p>
+          <div id="ex-qs"></div>
+          <div class="row"><button type="submit" id="ex-btn">Send answers</button></div>
+          <p id="ex-msg" role="status"></p>
         </form>
       </div>
       <div class="card">
@@ -675,8 +684,47 @@ document.getElementById("followup").addEventListener("submit", async e => {
     const r = await fetch("/api/followup", { method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ email, consent: true, stage: s.mode, answers: s, result, website: document.getElementById("fu-website").value }) });
     if (!r.ok) throw new Error(r.status);
-    msg.textContent = "Thank you. We'll be in touch in a year.";
+    msg.textContent = "Thank you. We'll be in touch.";
+    const d = await r.json().catch(() => ({}));
+    if (d.t) showExtras(d.t, s.mode);
   } catch (err) { msg.textContent = "Sorry, that didn't save. Please try again later."; btn.disabled = false; }
+});
+// Optional questions after joining the follow-up (predictors from other research that the surveys lack).
+const EXTRA_QS = [
+  ["happy", "All in all, how happy are you with the relationship? (0 = not at all, 10 = completely)", [...Array(11).keys()].map(i => [String(i), String(i)])],
+  ["committed", "How committed are you to making it last?", [["not", "Not very"], ["somewhat", "Somewhat"], ["very", "Very"], ["completely", "Completely"]]],
+  ["thought_split", "In the past three months, have you thought the relationship might end?", [["never", "No"], ["once", "Once or twice"], ["often", "Often"]]],
+  ["putdowns", "When you disagree, how often does it turn into criticism or put-downs?", [["rarely", "Rarely"], ["sometimes", "Sometimes"], ["often", "Often"]]],
+  ["shutdown", "How often does one of you shut down or walk away in the middle of a disagreement?", [["rarely", "Rarely"], ["sometimes", "Sometimes"], ["often", "Often"]]],
+  ["alternatives", "If this relationship ended, how easy would it be to find someone as good or better?", [["hard", "Hard"], ["possible", "Possible"], ["easy", "Easy"]]],
+  ["approve", "Do your friends and family approve of the relationship?", [["yes", "Mostly yes"], ["mixed", "Mixed"], ["no", "Mostly no"]]],
+  ["money", "How often do you disagree about money?", [["rarely", "Rarely"], ["sometimes", "Sometimes"], ["often", "Often"]]],
+  ["kids_agree", "Do you agree about whether to have (more) children?", [["yes", "Yes"], ["unsure", "Not sure"], ["no", "No"]]],
+  ["unfaithful", "Has either of you been unfaithful in this relationship?", [["no", "No"], ["yes", "Yes"], ["skip", "Prefer not to say"]]],
+  ["substance", "Is drinking or drug use a problem in the relationship?", [["no", "No"], ["sometimes", "Sometimes"], ["yes", "Yes"]]],
+  ["partner_parents", "Did your partner's parents divorce or separate?", [["together", "No"], ["split", "Yes"], ["unsure", "Not sure"]]],
+];
+let exToken = null;
+function showExtras(t, stage) {
+  exToken = t;
+  const box = document.getElementById("ex-qs");
+  box.innerHTML = EXTRA_QS.map(([id, q, opts]) => `<div><div class="ql">${q}</div><div class="seg" role="radiogroup">${opts.map(([v, txt], i) =>
+    `<input type="radio" name="ex-${id}" id="ex-${id}-${i}" value="${v}"><label for="ex-${id}-${i}">${txt}</label>`).join("")}</div></div>`).join("");
+  document.getElementById("followup").hidden = true;
+  document.getElementById("extras").hidden = false;
+}
+document.getElementById("extras").addEventListener("submit", async e => {
+  e.preventDefault();
+  const answers = {}, msg = document.getElementById("ex-msg"), btn = document.getElementById("ex-btn");
+  for (const [id] of EXTRA_QS) { const el = document.querySelector(`input[name="ex-${id}"]:checked`); if (el) answers[id] = el.value; }
+  if (!Object.keys(answers).length) { msg.textContent = "Tap at least one answer, or just skip this."; return; }
+  btn.disabled = true; msg.textContent = "Saving…";
+  try {
+    const r = await fetch("/api/extras", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ t: exToken, answers }) });
+    if (!r.ok) throw new Error(r.status);
+    document.getElementById("ex-qs").hidden = true; btn.hidden = true;
+    msg.textContent = "Thank you, that really helps. We'll be in touch.";
+  } catch (err) { msg.textContent = "Sorry, that didn't save. Please try again."; btn.disabled = false; }
 });
 // Sliders: tick marks, labels and a filled track, so values are easier to judge and hit on a phone.
 const TICKS = {

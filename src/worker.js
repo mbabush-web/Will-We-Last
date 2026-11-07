@@ -41,6 +41,7 @@ async function ensureTables(db) {
   const cols = (await db.prepare("PRAGMA table_info(followups)").all()).results.map(r => r.name);
   if (!cols.includes("token")) await db.prepare("ALTER TABLE followups ADD COLUMN token TEXT").run();
   if (!cols.includes("stopped")) await db.prepare("ALTER TABLE followups ADD COLUMN stopped INTEGER NOT NULL DEFAULT 0").run();
+  if (!cols.includes("extras")) await db.prepare("ALTER TABLE followups ADD COLUMN extras TEXT").run();
   await db.prepare(`CREATE TABLE IF NOT EXISTS checkins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     followup_id INTEGER NOT NULL,
@@ -78,12 +79,40 @@ async function followup(request, env) {
   if (!["A", "B", "C", "D"].includes(d.stage)) return json({ ok: false, error: "stage" }, 400);
   if (typeof d.answers !== "object" || typeof d.result !== "object") return json({ ok: false, error: "fields" }, 400);
   await ensureTables(env.DB);
-  const now = new Date().toISOString();
+  const now = new Date().toISOString(), token = newToken();
   const r = await env.DB.prepare("INSERT INTO followups (created_at, email, stage, answers, result, consent_version, token) VALUES (?, ?, ?, ?, ?, ?, ?)")
-    .bind(now, email, d.stage, JSON.stringify(d.answers), JSON.stringify(d.result), CONSENT_VERSION, newToken()).run();
+    .bind(now, email, d.stage, JSON.stringify(d.answers), JSON.stringify(d.result), CONSENT_VERSION, token).run();
   const id = r.meta.last_row_id;
   await env.DB.batch(scheduleFor(d.stage, CONSENT_VERSION).map(m =>
     env.DB.prepare("INSERT INTO checkins (followup_id, months, due_at) VALUES (?, ?, ?)").bind(id, m, addMonths(now, m))));
+  return json({ ok: true, t: token }); // the person's own token, so the optional questions can be attached to this sign-up
+}
+
+// Optional "help us improve" answers given right after joining: predictors from other research that the
+// surveys behind the odds don't measure. They don't change anyone's odds; they're tested against check-ins.
+const EXTRAS = {
+  happy: [...Array(11).keys()].map(String),
+  committed: ["not", "somewhat", "very", "completely"],
+  thought_split: ["never", "once", "often"],
+  putdowns: ["rarely", "sometimes", "often"],
+  shutdown: ["rarely", "sometimes", "often"],
+  alternatives: ["hard", "possible", "easy"],
+  approve: ["yes", "mixed", "no"],
+  money: ["rarely", "sometimes", "often"],
+  kids_agree: ["yes", "unsure", "no"],
+  unfaithful: ["no", "yes", "skip"],
+  substance: ["no", "sometimes", "yes"],
+  partner_parents: ["together", "split", "unsure"],
+};
+async function extras(request, env) {
+  if (request.method !== "POST") return json({ ok: false, error: "method" }, 405);
+  await ensureTables(env.DB);
+  const b = await readBody(request); if (b.error) return b.error;
+  const f = await byToken(env.DB, b.d.t);
+  if (!f) return json({ ok: false, error: "link" }, 404);
+  const a = b.d.answers && typeof b.d.answers === "object" ? b.d.answers : {}, out = {};
+  for (const [k, allowed] of Object.entries(EXTRAS)) if (allowed.includes(a[k])) out[k] = a[k];
+  await env.DB.prepare("UPDATE followups SET extras = ? WHERE id = ?").bind(JSON.stringify({ ...out, at: new Date().toISOString() }), f.id).run();
   return json({ ok: true });
 }
 
@@ -215,6 +244,7 @@ export default {
     if (!env.DB) return json({ ok: false, error: "not ready" }, 503);
     if (pathname === "/api/followup") return followup(request, env);
     if (pathname === "/api/checkin") return checkin(request, env);
+    if (pathname === "/api/extras") return extras(request, env);
     if (pathname === "/api/stop") return stopOrDelete(request, env, "stop");
     if (pathname === "/api/delete") return stopOrDelete(request, env, "delete");
     return json({ ok: false, error: "not found" }, 404);
