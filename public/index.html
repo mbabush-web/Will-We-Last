@@ -257,7 +257,8 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="q" data-show="A B C"><div class="qlabel">Lived with both biological parents growing up?</div><div class="seg" id="bothpar"></div></div>
         <div class="q"><div class="qlabel">Race and ethnicity</div><div class="seg" id="race"></div>
           <p class="hint">"Prefer not to say" uses the survey average.<span id="race-d-hint" hidden> The dating survey doesn't separate multiracial people, so that option isn't offered here.</span></p></div>
-        <div class="q" data-show="A B C"><label for="usstate">State you live in</label><select id="usstate" class="sel"><option value="">Prefer not to say</option><option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="DC">District of Columbia</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option></select><p class="hint" id="state-c-hint" hidden>For couples living together, only whether you live in the South is used. State-by-state rates are measured for marriages.</p></div>
+        <div class="q" data-show="C"><div class="qlabel">Do you live in the South?</div><div class="seg" id="region"></div><p class="hint">For couples living together only the region is measured, not the state. The South means AL, AR, DC, DE, FL, GA, KY, LA, MD, MS, NC, OK, SC, TN, TX, VA and WV.</p></div>
+        <div class="q" data-show="A B"><label for="usstate">State you live in</label><select id="usstate" class="sel"><option value="">Prefer not to say</option><option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option><option value="AR">Arkansas</option><option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option><option value="DE">Delaware</option><option value="DC">District of Columbia</option><option value="FL">Florida</option><option value="GA">Georgia</option><option value="HI">Hawaii</option><option value="ID">Idaho</option><option value="IL">Illinois</option><option value="IN">Indiana</option><option value="IA">Iowa</option><option value="KS">Kansas</option><option value="KY">Kentucky</option><option value="LA">Louisiana</option><option value="ME">Maine</option><option value="MD">Maryland</option><option value="MA">Massachusetts</option><option value="MI">Michigan</option><option value="MN">Minnesota</option><option value="MS">Mississippi</option><option value="MO">Missouri</option><option value="MT">Montana</option><option value="NE">Nebraska</option><option value="NV">Nevada</option><option value="NH">New Hampshire</option><option value="NJ">New Jersey</option><option value="NM">New Mexico</option><option value="NY">New York</option><option value="NC">North Carolina</option><option value="ND">North Dakota</option><option value="OH">Ohio</option><option value="OK">Oklahoma</option><option value="OR">Oregon</option><option value="PA">Pennsylvania</option><option value="RI">Rhode Island</option><option value="SC">South Carolina</option><option value="SD">South Dakota</option><option value="TN">Tennessee</option><option value="TX">Texas</option><option value="UT">Utah</option><option value="VT">Vermont</option><option value="VA">Virginia</option><option value="WA">Washington</option><option value="WV">West Virginia</option><option value="WI">Wisconsin</option><option value="WY">Wyoming</option></select></div>
       </fieldset>
     </form>
 
@@ -330,8 +331,9 @@ const OPTIONS = {
   together: [["1", "Yes"], ["0", "No, living apart"]],
   qual: [["fair", "Fair or poor"], ["good", "Good"], ["exc", "Excellent"]],
   samesex: [["0", "No"], ["1", "Yes"]],
+  region: [["", "Prefer not to say"], ["s", "Yes"], ["o", "No"]],
 };
-const DEFAULTS = { dyrsk: "1.5", ymk: "1.5", cyrsk: "0", gen: "now", sex: "f", edu: "3", order: "0", preg: "0", spedu: "ba", cohab: "1to3", prior: "0", bothpar: "1", race: "avg", together: "1", calibk: "A", qual: "exc", samesex: "0" };
+const DEFAULTS = { dyrsk: "1.5", ymk: "1.5", cyrsk: "0", gen: "now", sex: "f", edu: "3", order: "0", preg: "0", spedu: "ba", cohab: "1to3", prior: "0", bothpar: "1", race: "avg", together: "1", calibk: "A", qual: "exc", samesex: "0", region: "" };
 const LABELS = { qual: "Relationship", edu: "Your degree", order: "First marriage", preg: "Pregnant at the wedding", spedu: "Spouse's schooling", cohab: "Living together first", prior: "Earlier live-in partners", together: "Living together now" };
 const LEVER_KEYS = { A: ["edu", "order", "spedu", "cohab", "prior"], B: ["together"], C: ["edu", "prior"], D: ["qual"] };
 
@@ -366,7 +368,7 @@ function extraX(s) {
   x.prior_cohab_1 = +(s.prior === "1"); x.prior_cohab_2p = +(s.prior === "2");
   x.preg_at_wedding = +(s.preg === "1");
   // Census South region; share living there when no state is given
-  x.south = s.usstate ? +SOUTH.has(s.usstate) : 0.38;
+  x.south = s.mode === "C" ? (s.region ? +(s.region === "s") : 0.38) : s.usstate ? +SOUTH.has(s.usstate) : 0.38;
   return x;
 }
 // ACS 2019-24: each state's yearly divorce rate for married women vs. its region, after age, years married,
@@ -584,7 +586,6 @@ function setMode(m) {
   mixed.hidden = document.querySelector('label[for="race-4"]').hidden = m === "D";
   document.getElementById("race-d-hint").hidden = m !== "D";
   if (m === "D" && mixed.checked) document.getElementById("race-1").checked = true;
-  document.getElementById("state-c-hint").hidden = m !== "C";
   const age = document.getElementById("age");
   age.max = 45;
   if (+age.value > +age.max) age.value = age.max;
