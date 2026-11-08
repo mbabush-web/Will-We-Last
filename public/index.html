@@ -221,10 +221,11 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
 
       <fieldset data-show="B">
         <legend>Your marriage now</legend>
-        <p class="hint">Built from couples who answered these questions in their first years of marriage, between 2000 and 2008. Past 5 years married, the estimate switches to the wedding-day model counted from today, and these answers shift it by the same amount as in early marriage. The survey asked couples to rate their conflict from 0 (none) to 10 (a lot). Each choice here stands for a range of that scale.</p>
+        <p class="hint">Built from couples who answered these questions in their first years of marriage, between 2000 and 2008. Past 5 years married, the estimate switches to the wedding-day model counted from today, and these answers shift it by the same amount as in early marriage. The conflict scale runs 0 to 10.</p>
         <div class="q"><div class="qlabel">How long you've been married <span class="val" id="ym-v" hidden></span></div><div class="seg" id="ymk"></div>
           <input type="hidden" id="ym" value="1"></div>
-        <div class="q"><div class="qlabel">How much conflict is there in your marriage?</div><div class="seg" id="conflictk"></div></div>
+        <div class="q"><label for="conflict">How much conflict there is <span class="val" id="conflict-v"></span></label>
+          <input type="range" id="conflict" min="0" max="10" step="1" value="3"><div class="scale"><span>none</span><span>a lot</span></div></div>
         <div class="q"><div class="qlabel">Living with your spouse right now?</div><div class="seg" id="together"></div></div>
       </fieldset>
 
@@ -330,10 +331,9 @@ const OPTIONS = {
   together: [["1", "Yes"], ["0", "No, living apart"]],
   qual: [["fair", "Fair or poor"], ["good", "Good"], ["exc", "Excellent"]],
   samesex: [["0", "No"], ["1", "Yes"]],
-  conflictk: [["0.5", "None or almost none"], ["2.4", "A little"], ["4.8", "Some"], ["8.7", "A lot"]],
   region: [["", "Prefer not to say"], ["s", "Yes"], ["o", "No"]],
 };
-const DEFAULTS = { dyrsk: "1.5", ymk: "1.5", cyrsk: "0", gen: "now", sex: "f", edu: "3", order: "0", preg: "0", spedu: "ba", cohab: "1to3", prior: "0", bothpar: "1", race: "avg", together: "1", calibk: "A", qual: "exc", samesex: "0", region: "", conflictk: "2.4" };
+const DEFAULTS = { dyrsk: "1.5", ymk: "1.5", cyrsk: "0", gen: "now", sex: "f", edu: "3", order: "0", preg: "0", spedu: "ba", cohab: "1to3", prior: "0", bothpar: "1", race: "avg", together: "1", calibk: "A", qual: "exc", samesex: "0", region: "" };
 const LABELS = { qual: "Relationship", edu: "Your degree", order: "First marriage", preg: "Pregnant at the wedding", spedu: "Spouse's schooling", cohab: "Living together first", prior: "Earlier live-in partners", together: "Living together now" };
 const LEVER_KEYS = { A: ["edu", "order", "spedu", "cohab", "prior"], B: ["together"], C: ["edu", "prior"], D: ["qual"] };
 
@@ -459,7 +459,7 @@ function condFrom(M, lp, y0, years) {
   return Array.from({ length: years + 1 }, (_, h) => 1 - S(y0 + h) / S(y0));
 }
 function longMarried(s, years) {
-  const typical = { ...s, ym: LONG, conflict: 2.4, together: "1" };
+  const typical = { ...s, ym: LONG, conflict: 3, together: "1" };
   const feel = score({ ...s, ym: LONG }).lp - score(typical).lp;
   const { M, lp } = score({ ...s, mode: "A", gen: eraOf(s.ym) });
   return condFrom(M, lp + feel, s.ym, years);
@@ -501,10 +501,10 @@ function rawCurve(s, years) {
 let mode = "A", stage = "A";
 function state() {
   const s = { mode };
-  for (const id of ["age", "ym", "dyrs", "dage", "cyrs"]) s[id] = +document.getElementById(id).value;
+  for (const id of ["age", "ym", "conflict", "dyrs", "dage", "cyrs"]) s[id] = +document.getElementById(id).value;
   for (const name of Object.keys(OPTIONS)) s[name] = document.querySelector(`input[name="${name}"]:checked`).value;
   s.usstate = document.getElementById("usstate").value;
-  s.cyrs = +s.cyrsk; s.dyrs = +s.dyrsk; s.ym = +s.ymk; s.conflict = +s.conflictk;
+  s.cyrs = +s.cyrsk; s.dyrs = +s.dyrsk; s.ym = +s.ymk;
   return s;
 }
 const pct = p => `${Math.round(p * 100)}%`;
@@ -557,7 +557,7 @@ function levers(s, base10) {
     if (best && best.d > 0) items.push(best);
   }
   const sliders = s.mode === "C" || s.mode === "D" ? [] : s.mode === "B"
-    ? [["conflict", v => `Less conflict (${v < 1 ? "none or almost none" : "a little"})`, [0.5, 2.4]]]
+    ? [["conflict", v => `Less conflict (${v} of 10)`, [0, 2]]]
     : [["age", v => `Marrying at ${v} instead of ${s.age}`, Array.from({ length: 23 }, (_, i) => 18 + i)]];
   for (const [id, lab, vals] of sliders) {
     let best = null;
@@ -599,6 +599,7 @@ function update() {
     if (who === "you") document.getElementById("preg-l").textContent = document.getElementById("preg-l").textContent.replace(/^Was you/, "Were you"); }
   document.getElementById("age-v").textContent = `${s.age}`;
   document.getElementById("ym-v").textContent = `${s.ym} yr`;
+  document.getElementById("conflict-v").textContent = `${s.conflict}`;
   document.getElementById("gen-hint").textContent = {
     "2000": "The same couple, married in the 2000s. Set to 2000s weddings in the national NSFG survey (13,892 marriages), for couples of the same age and background.",
     pre2000: "The same couple, married in the 1970s to 1990s (NSFG, 13,633 marriages). Raw divorce rates were much higher then, 40% within 10 years for 1980s weddings, but mostly because people married younger and with less schooling. For couples of the same age and background, the risk was about the same as in the 2000s; the big drop came in the 2010s.",
@@ -734,6 +735,7 @@ document.getElementById("extras").addEventListener("submit", async e => {
 const TICKS = {
   age: { minor: 1, labels: [18, 20, 25, 30, 35, 40, 45] },
   dage: { minor: 5, labels: [18, 30, 40, 50, 60, 75] },
+  conflict: { minor: 1, labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
 };
 function buildRange(el) {
   const cfg = TICKS[el.id] || { minor: +el.step || 1, labels: [+el.min, +el.max] };
