@@ -9,7 +9,7 @@ const SITE = "https://willwelast.app";
 const FROM = "Will We Last <checkin@willwelast.app>";
 const REPLY_TO = "hello@willwelast.app";
 const DAILY_LIMIT = 90; // Resend's free plan allows 100 emails a day
-const REMIND_AFTER_DAYS = 14;
+const REMIND_AFTER_DAYS = 5;
 
 // Months after sign-up for each check-in. People who signed up under the first consent were promised two.
 function scheduleFor(stage, consentVersion) {
@@ -172,7 +172,7 @@ async function stopOrDelete(request, env, action) {
   const b = await readBody(request); if (b.error) return b.error;
   const f = await byToken(env.DB, b.d.t);
   if (!f) return json({ ok: false, error: "link" }, 404);
-  if (action === "stop") await env.DB.prepare("UPDATE followups SET stopped = 1 WHERE id = ?").bind(f.id).run();
+  if (action === "stop") await env.DB.prepare("UPDATE followups SET stopped = 1, email = '' WHERE id = ?").bind(f.id).run();
   else await env.DB.batch([env.DB.prepare("DELETE FROM checkins WHERE followup_id = ?").bind(f.id), env.DB.prepare("DELETE FROM followups WHERE id = ?").bind(f.id)]);
   return json({ ok: true });
 }
@@ -180,22 +180,27 @@ async function stopOrDelete(request, env, action) {
 // ---------- emails
 const when = m => (m === 6 ? "six months" : m === 12 ? "a year" : `${m / 12} years`);
 function emailBody(months, link, stopLink, reminder) {
-  const lead = reminder ? "A quick reminder: " : "";
-  const text = `${lead}About ${when(months)} ago you used Will We Last and asked us to check in.
+  const lead = reminder ? "A quick reminder: about" : "About";
+  const why = "Your answer helps us test and improve the odds, so everyone who uses Will We Last can make better-informed decisions about their relationship.";
+  const privacy = "Your answers are private. We never publish or share anything that could identify you, and results only ever appear as totals across many people. Your email is used only to send these check-ins and is deleted after the last one.";
+  const text = `${lead} ${when(months)} ago you used Will We Last, the free relationship odds calculator at willwelast.app, and asked us to check in.
+
+${why}
 
 One quick question, about 30 seconds: are you still together?
 ${link}
 
-Your answer helps us improve Will We Last, so everyone who uses it can make better-informed decisions about their relationship. It stays private and is only ever counted in totals.
+${privacy}
 
 Don't want these emails? Stop them or delete everything we stored: ${stopLink}
 
 Will We Last · ${SITE}`;
   const html = `<div style="font-family:-apple-system,Segoe UI,Arial,sans-serif;font-size:15px;line-height:1.5;color:#222;max-width:520px">
-<p>${lead}About ${when(months)} ago you used <b>Will We Last</b> and asked us to check in.</p>
+<p>${lead} ${when(months)} ago you used <b>Will We Last</b>, the free relationship odds calculator at <a href="${SITE}" style="color:#5a4e94">willwelast.app</a>, and asked us to check in.</p>
+<p>${why}</p>
 <p>One quick question, about 30 seconds: are you still together?</p>
 <p><a href="${link}" style="display:inline-block;background:#5a4e94;color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;font-weight:600">Answer the check-in</a></p>
-<p>Your answer helps us improve Will We Last, so everyone who uses it can make better-informed decisions about their relationship. It stays private and is only ever counted in totals.</p>
+<p style="font-size:14px;color:#444">${privacy}</p>
 <p style="font-size:13px;color:#666">Don't want these emails? <a href="${stopLink}" style="color:#666">Stop them or delete everything we stored</a>.<br>Will We Last · <a href="${SITE}" style="color:#666">willwelast.app</a></p></div>`;
   return { subject: reminder ? "Reminder: your Will We Last check-in" : "Your Will We Last check-in", text, html };
 }
@@ -216,7 +221,7 @@ async function runCheckins(env) {
   await schedule(env.DB);
   const now = new Date(), nowIso = now.toISOString(), remindBefore = new Date(now - REMIND_AFTER_DAYS * 864e5).toISOString();
   const due = (await env.DB.prepare(`SELECT c.id, c.followup_id, c.months, c.sent_at, f.email, f.token FROM checkins c JOIN followups f ON f.id = c.followup_id
-    WHERE f.stopped = 0 AND c.answered_at IS NULL AND c.due_at <= ?
+    WHERE f.stopped = 0 AND f.email <> '' AND c.answered_at IS NULL AND c.due_at <= ?
       AND (c.sent_at IS NULL OR (c.reminded_at IS NULL AND c.sent_at <= ?))
     ORDER BY c.due_at LIMIT ?`).bind(nowIso, remindBefore, DAILY_LIMIT).all()).results;
   // One email per person per run: if several check-ins are due at once (a missed run), send only the latest.
@@ -233,6 +238,9 @@ async function runCheckins(env) {
       sent++;
     }
   }
+  // Once nothing is left to send (last check-in done, a split reported, or emails stopped), the email goes.
+  await env.DB.prepare(`UPDATE followups SET email = '' WHERE email <> '' AND (stopped = 1 OR NOT EXISTS (SELECT 1 FROM checkins c
+    WHERE c.followup_id = followups.id AND c.answered_at IS NULL AND (c.sent_at IS NULL OR c.reminded_at IS NULL)))`).run();
   return { sent };
 }
 
