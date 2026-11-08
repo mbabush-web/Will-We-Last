@@ -692,10 +692,8 @@ document.getElementById("followup").addEventListener("submit", async e => {
 // Optional questions after joining the follow-up (predictors from other research that the surveys lack).
 const EXTRA_QS = [
   ["happy", "All in all, how happy are you with the relationship? (0 = not at all, 10 = completely)", [...Array(11).keys()].map(i => [String(i), String(i)])],
-  ["committed", "How committed are you to making it last?", [["not", "Not very"], ["somewhat", "Somewhat"], ["very", "Very"], ["completely", "Completely"]]],
   ["thought_split", "In the past three months, have you thought the relationship might end?", [["never", "No"], ["once", "Once or twice"], ["often", "Often"]]],
   ["putdowns", "When you disagree, how often does it turn into criticism or put-downs?", [["rarely", "Rarely"], ["sometimes", "Sometimes"], ["often", "Often"]]],
-  ["shutdown", "How often does one of you shut down or walk away in the middle of a disagreement?", [["rarely", "Rarely"], ["sometimes", "Sometimes"], ["often", "Often"]]],
   ["alternatives", "If this relationship ended, how easy would it be to find someone as good or better?", [["hard", "Hard"], ["possible", "Possible"], ["easy", "Easy"]]],
   ["approve", "Do your friends and family approve of the relationship?", [["yes", "Mostly yes"], ["mixed", "Mixed"], ["no", "Mostly no"]]],
   ["money", "How often do you disagree about money?", [["rarely", "Rarely"], ["sometimes", "Sometimes"], ["often", "Often"]]],

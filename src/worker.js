@@ -92,10 +92,8 @@ async function followup(request, env) {
 // surveys behind the odds don't measure. They don't change anyone's odds; they're tested against check-ins.
 const EXTRAS = {
   happy: [...Array(11).keys()].map(String),
-  committed: ["not", "somewhat", "very", "completely"],
   thought_split: ["never", "once", "often"],
   putdowns: ["rarely", "sometimes", "often"],
-  shutdown: ["rarely", "sometimes", "often"],
   alternatives: ["hard", "possible", "easy"],
   approve: ["yes", "mixed", "no"],
   money: ["rarely", "sometimes", "often"],
