@@ -186,7 +186,7 @@ function emailBody(months, link, stopLink, reminder) {
 One quick question, about 30 seconds: are you still together?
 ${link}
 
-Your answer is the only way to test whether the odds hold up for real couples. It stays private and is only ever counted in totals.
+Your answer helps us improve Will We Last, so everyone who uses it can make better-informed decisions about their relationship. It stays private and is only ever counted in totals.
 
 Don't want these emails? Stop them or delete everything we stored: ${stopLink}
 
@@ -195,7 +195,7 @@ Will We Last · ${SITE}`;
 <p>${lead}About ${when(months)} ago you used <b>Will We Last</b> and asked us to check in.</p>
 <p>One quick question, about 30 seconds: are you still together?</p>
 <p><a href="${link}" style="display:inline-block;background:#5a4e94;color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;font-weight:600">Answer the check-in</a></p>
-<p>Your answer is the only way to test whether the odds hold up for real couples. It stays private and is only ever counted in totals.</p>
+<p>Your answer helps us improve Will We Last, so everyone who uses it can make better-informed decisions about their relationship. It stays private and is only ever counted in totals.</p>
 <p style="font-size:13px;color:#666">Don't want these emails? <a href="${stopLink}" style="color:#666">Stop them or delete everything we stored</a>.<br>Will We Last · <a href="${SITE}" style="color:#666">willwelast.app</a></p></div>`;
   return { subject: reminder ? "Reminder: your Will We Last check-in" : "Your Will We Last check-in", text, html };
 }
