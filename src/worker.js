@@ -245,7 +245,7 @@ async function runCheckins(env) {
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
-    if (pathname === "/api/status") return json({ followup: Boolean(env.DB) }); // the form only shows once storage is connected
+    if (pathname === "/api/status") return json({ followup: Boolean(env.DB), email: Boolean(env.RESEND_API_KEY) }); // the form only shows once storage is connected
     if (!pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     if (!env.DB) return json({ ok: false, error: "not ready" }, 503);
     if (pathname === "/api/followup") return followup(request, env);
