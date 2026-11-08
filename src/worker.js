@@ -242,6 +242,23 @@ async function runCheckins(env) {
   return { sent };
 }
 
+// TEMPORARY (2026-11-08): sends one sample check-in to the site's own inbox so Max can see it. Works once only.
+async function testEmail(env) {
+  if (!env.RESEND_API_KEY) return json({ ok: false, error: "no key" }, 503);
+  await ensureTables(env.DB);
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS test_sent (at TEXT)").run();
+  if ((await env.DB.prepare("SELECT COUNT(*) AS n FROM test_sent").first()).n) return json({ ok: false, error: "already sent" }, 409);
+  await env.DB.prepare("INSERT INTO test_sent VALUES (?)").bind(new Date().toISOString()).run();
+  const now = new Date().toISOString(), token = newToken();
+  const r = await env.DB.prepare("INSERT INTO followups (created_at, email, stage, answers, result, consent_version, token) VALUES (?, ?, ?, ?, ?, ?, ?)")
+    .bind(now, "hello@willwelast.app", "D", JSON.stringify({ test: true }), "{}", CONSENT_VERSION, token).run();
+  const id = r.meta.last_row_id;
+  const c = await env.DB.prepare("INSERT INTO checkins (followup_id, months, due_at, sent_at) VALUES (?, 12, ?, ?)").bind(id, now, now).run();
+  const link = `${SITE}/checkin?t=${token}&c=${c.meta.last_row_id}`, stopLink = `${SITE}/checkin?t=${token}&do=stop`;
+  const ok = await sendEmail(env, "hello@willwelast.app", emailBody(12, link, stopLink, false), stopLink);
+  return json({ ok });
+}
+
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
@@ -251,6 +268,7 @@ export default {
     if (pathname === "/api/followup") return followup(request, env);
     if (pathname === "/api/checkin") return checkin(request, env);
     if (pathname === "/api/extras") return extras(request, env);
+    if (pathname === "/api/test-email" && request.method === "POST") return testEmail(env); // TEMPORARY: one sample to hello@, removed after use
     if (pathname === "/api/stop") return stopOrDelete(request, env, "stop");
     if (pathname === "/api/delete") return stopOrDelete(request, env, "delete");
     return json({ ok: false, error: "not found" }, 404);
