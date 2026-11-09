@@ -280,7 +280,7 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <div class="legend"><span style="--sw: var(--risk)" id="this-label">This marriage</span><span style="--sw: var(--muted)" id="avg-label">Average marriage</span></div>
         <p class="hint" id="basis"></p>
         <p class="hint">How accurate is this? Across thousands of couples, the odds match what actually happened, but no model can tell for sure which couples will last. <a href="https://willwelast.app/methodology#accuracy">See how we checked</a>.</p>
-        <div class="share" id="share"><button type="button" id="share-btn">Share your result</button><span id="share-msg" role="status"></span></div>
+        <div class="share" id="share"><button type="button" id="share-btn">Share your result</button><button type="button" id="pic-btn">Share as a picture</button><span id="share-msg" role="status"></span></div>
         <form class="followup" id="followup" hidden novalidate>
           <h3>Help us check our accuracy</h3>
           <p>Leave your email and we'll check in a few times: after 1, 3 and 5 years (and at 6 months if you're not married yet). Each check-in takes about 30 seconds: are you still together? Your answers help us improve the app, so everyone who uses it can make better-informed decisions about their relationship.</p>
@@ -440,6 +440,7 @@ function score(s) {
   return { M: A, lp: A.intercept + dot(A.coefs, { ...coreX(s, A.baseline_profile), ...extras }) + spouseAdjA(s) + now + stateAdj(s) + cohabAdj(s) };
 }
 // years of follow-up behind each stage's model, and the horizons shown up top
+let lastCurves = null;
 const SPAN = { A: 15, B: 15, C: 15, D: 8 }, HZ = { A: [5, 10], B: [5, 10], C: [5, 10], D: [1, 5] };
 // time already together for stages where the model's clock starts at the move-in
 const already = s => s.mode === "C" ? s.cyrs : 0;
@@ -542,6 +543,7 @@ function drawChart(c, avg) {
   g += `<path d="${path(c)}" fill="none" stroke="var(--risk)" stroke-width="2.5"/>`;
   for (const t of HZ[mode]) g += `<circle cx="${X(t)}" cy="${Y(c[t])}" r="4" fill="var(--risk)" stroke="var(--panel)" stroke-width="2"/>`;
   svg.innerHTML = g;
+  lastCurves = { c, avg };
 }
 
 function levers(s, base10) {
@@ -675,6 +677,74 @@ document.getElementById("share-btn").addEventListener("click", async () => {
   let ta = document.querySelector("#share textarea");
   if (!ta) { ta = document.createElement("textarea"); ta.rows = 3; ta.readOnly = true; document.getElementById("share").append(ta); }
   ta.value = `${text} ${url}`; ta.select(); msg.textContent = "Copy this text to share it.";
+});
+// Picture card: draws the result (never the answers) on a canvas, in fixed light colours so it looks the same everywhere.
+function wrapText(x, text, maxW) {
+  const words = text.split(/\s+/), lines = []; let line = "";
+  for (const w of words) { const t = line ? `${line} ${w}` : w; if (x.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+  if (line) lines.push(line); return lines;
+}
+async function drawCard() {
+  const W = 1080, H = 1350, P = 72, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const x = cv.getContext("2d"), v = id => document.getElementById(id).textContent;
+  const C = { bg: "#f3f4f6", panel: "#ffffff", ink: "#18202c", muted: "#5b6575", line: "#d9dde4", risk: "#5a4e94", soft: "#ecebf6", accent: "#27548a" };
+  const D = '"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif', B = '"Public Sans", "Segoe UI", system-ui, sans-serif', M = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
+  try { await Promise.all([`700 96px ${D}`, `600 32px ${B}`, `500 26px ${M}`].map(f => document.fonts.load(f))); } catch (e) {}
+  const rr = (X, Y, w, h, r) => { x.beginPath(); x.roundRect(X, Y, w, h, r); };
+  x.fillStyle = C.bg; x.fillRect(0, 0, W, H);
+  x.fillStyle = C.panel; rr(36, 36, W - 72, H - 72, 28); x.fill(); x.strokeStyle = C.line; x.lineWidth = 2; x.stroke();
+  const stage = { D: "Dating", C: "Living together", A: "Engaged", B: "Married" }[mode] || "";
+  x.fillStyle = C.muted; x.font = `500 26px ${M}`; x.fillText(`WILL WE LAST · ${stage.toUpperCase()}`, P, 120);
+  x.fillStyle = C.ink; x.font = `600 34px ${B}`; x.fillText("Typical relationship length", P, 205);
+  x.fillStyle = C.risk; x.font = `700 132px ${D}`; x.fillText(v("rlast"), P - 4, 335);
+  x.fillStyle = C.muted; x.font = `400 26px ${B}`;
+  let y = 385; for (const l of wrapText(x, v("rlasts"), W - 2 * P)) { x.fillText(l, P, y); y += 36; }
+  // Two stat tiles
+  y += 24; const tw = (W - 2 * P - 24) / 2, th = 190;
+  [["k5", "r5"], ["k10", "r10"]].forEach(([k, r], i) => {
+    const X = P + i * (tw + 24); x.fillStyle = C.soft; rr(X, y, tw, th, 18); x.fill();
+    x.fillStyle = C.risk; x.font = `700 84px ${D}`; x.fillText(v(r), X + 28, y + 100);
+    x.fillStyle = C.ink; x.font = `500 25px ${B}`; wrapText(x, v(k), tw - 56).slice(0, 2).forEach((l, j) => x.fillText(l, X + 28, y + 140 + j * 32));
+  });
+  y += th + 80;
+  // Chart: this couple vs the average
+  if (lastCurves) {
+    const { c, avg } = lastCurves, span = c.length - 1, L = P + 70, R = W - P - 30, T = y + 10, Bt = y + 280;
+    const ymax = Math.min(1, Math.max(0.6, Math.ceil(Math.max(...c, ...avg) * 10) / 10));
+    const X = t => L + (t / span) * (R - L), Y = p => Bt - (p / ymax) * (Bt - T);
+    x.font = `400 22px ${M}`; x.textAlign = "right";
+    for (let p = 0; p <= ymax + 1e-9; p += 0.2) { x.strokeStyle = C.line; x.lineWidth = 1.5; x.beginPath(); x.moveTo(L, Y(p)); x.lineTo(R, Y(p)); x.stroke(); x.fillStyle = C.muted; x.fillText(`${Math.round(p * 100)}%`, L - 12, Y(p) + 8); }
+    x.textAlign = "center";
+    for (const t of span === 8 ? [0, 2, 4, 6, 8] : [0, 5, 10, 15]) x.fillText(`${t} yr`, X(t), Bt + 36);
+    x.textAlign = "left";
+    const line = arr => { x.beginPath(); arr.forEach((p, t) => t ? x.lineTo(X(t), Y(p)) : x.moveTo(X(t), Y(p))); };
+    line(c); x.lineTo(X(span), Y(0)); x.lineTo(X(0), Y(0)); x.closePath(); x.fillStyle = C.soft; x.fill();
+    line(avg); x.setLineDash([12, 10]); x.strokeStyle = C.muted; x.lineWidth = 4; x.stroke(); x.setLineDash([]);
+    line(c); x.strokeStyle = C.risk; x.lineWidth = 6; x.stroke();
+    // Legend
+    const ly = Bt + 92; x.font = `500 25px ${B}`;
+    x.strokeStyle = C.risk; x.lineWidth = 6; x.beginPath(); x.moveTo(P, ly - 8); x.lineTo(P + 40, ly - 8); x.stroke();
+    x.fillStyle = C.ink; x.fillText(`${v("this-label")}`, P + 54, ly);
+    const lx = P + 54 + x.measureText(v("this-label")).width + 48;
+    x.strokeStyle = C.muted; x.lineWidth = 4; x.setLineDash([12, 10]); x.beginPath(); x.moveTo(lx, ly - 8); x.lineTo(lx + 40, ly - 8); x.stroke(); x.setLineDash([]);
+    x.fillText(v("avg-label"), lx + 54, ly);
+    x.fillStyle = C.muted; x.font = `400 22px ${B}`; x.fillText("Share of couples split up, by years", P, T - 22);
+  }
+  // Footer call to action
+  x.fillStyle = C.accent; rr(P, H - 186, W - 2 * P, 96, 48); x.fill();
+  x.fillStyle = "#ffffff"; x.font = `700 38px ${D}`; x.textAlign = "center"; x.fillText("See yours at willwelast.app", W / 2, H - 124);
+  x.textAlign = "left";
+  return new Promise(res => cv.toBlob(res, "image/png"));
+}
+document.getElementById("pic-btn").addEventListener("click", async () => {
+  const msg = document.getElementById("share-msg"); msg.textContent = "Making your picture…";
+  const blob = await drawCard(); if (!blob) { msg.textContent = "Sorry, your browser couldn't make the picture."; return; }
+  const file = new File([blob], "will-we-last.png", { type: "image/png" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], text: "See yours: https://willwelast.app/" }); msg.textContent = ""; return; } catch (e) { if (e.name === "AbortError") { msg.textContent = ""; return; } }
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "will-we-last.png"; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000); msg.textContent = "Picture saved. Post it anywhere.";
 });
 // Follow-up opt-in: the only place answers ever leave the browser, and only after the person ticks consent.
 // Shown only where the site's own storage is connected (never in previews or saved copies).
