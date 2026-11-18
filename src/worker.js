@@ -114,6 +114,31 @@ async function extras(request, env) {
   return json({ ok: true });
 }
 
+// "Was this useful?" under the results: a yes/no tap, then an optional note. Stores only the tap, the note,
+// the tab and the date (no answers, odds, IP or email). k lets the same browser add its note to its own row.
+const FB_DAILY_CAP = 3000;
+async function feedback(request, env) {
+  if (request.method !== "POST") return json({ ok: false, error: "method" }, 405);
+  await env.DB.prepare(`CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT NOT NULL, stage TEXT, useful TEXT NOT NULL, note TEXT, k TEXT NOT NULL)`).run();
+  const b = await readBody(request); if (b.error) return b.error;
+  const d = b.d;
+  if (typeof d.k === "string" && typeof d.note === "string") {
+    const note = d.note.trim().slice(0, 1000);
+    if (!note || d.k.length < 16 || d.k.length > 64) return json({ ok: false, error: "note" }, 400);
+    const res = await env.DB.prepare("UPDATE feedback SET note = ? WHERE k = ? AND note IS NULL").bind(note, d.k).run();
+    return json({ ok: res.meta.changes === 1 });
+  }
+  const useful = clean(d.useful, ["yes", "no"]);
+  if (!useful) return json({ ok: false, error: "useful" }, 400);
+  const day = new Date(Date.now() - 864e5).toISOString();
+  if ((await env.DB.prepare("SELECT COUNT(*) AS n FROM feedback WHERE created_at > ?").bind(day).first()).n >= FB_DAILY_CAP) return json({ ok: false, error: "busy" }, 429);
+  const k = newToken();
+  await env.DB.prepare("INSERT INTO feedback (created_at, stage, useful, k) VALUES (?, ?, ?, ?)")
+    .bind(new Date().toISOString(), clean(d.stage, ["A", "B", "C", "D"]), useful, k).run();
+  return json({ ok: true, k });
+}
+
 async function readBody(request) {
   const origin = request.headers.get("origin") || "";
   if (origin && origin !== new URL(request.url).origin) return { error: json({ ok: false, error: "origin" }, 403) }; // same-site only
@@ -251,6 +276,7 @@ export default {
     if (pathname === "/api/followup") return followup(request, env);
     if (pathname === "/api/checkin") return checkin(request, env);
     if (pathname === "/api/extras") return extras(request, env);
+    if (pathname === "/api/feedback") return feedback(request, env);
     if (pathname === "/api/stop") return stopOrDelete(request, env, "stop");
     if (pathname === "/api/delete") return stopOrDelete(request, env, "delete");
     return json({ ok: false, error: "not found" }, 404);

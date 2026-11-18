@@ -91,6 +91,19 @@ body.revealed #reveal { display: none; }
 .share textarea { width: 100%; font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: vertical; }
 .followup { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
 .followup[hidden] { display: none; }
+.fb { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.fb[hidden], .fb [hidden] { display: none !important; }
+.fb .q { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.fb .q span { margin-right: 4px; }
+.fb button { font: inherit; font-size: 14px; font-weight: 600; border-radius: 999px; padding: 6px 14px; cursor: pointer; border: 1px solid var(--accent); background: var(--panel); color: var(--accent); }
+.fb button[aria-pressed="true"], .fb #fb-send { background: var(--accent); color: var(--panel); }
+.fb button:disabled { opacity: .6; cursor: default; }
+.fb .q button[aria-pressed="true"]:disabled { opacity: 1; }
+.fb label { font-size: 14px; }
+.fb textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; resize: vertical; }
+.fb .note { margin: 0; font-size: 12.5px; color: var(--muted); }
+.fb #fb-send { justify-self: start; }
+.fb #fb-msg { margin: 0; font-size: 13.5px; color: var(--muted); }
 .followup h3 { font-family: var(--display); font-size: 16px; margin: 0; }
 .followup p { margin: 0; font-size: 13.5px; color: var(--muted); }
 .followup .row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -292,6 +305,16 @@ header .eyebrow, header .lede, header .hint { color: var(--ink); }
         <p class="hint">How accurate is this? Across thousands of couples, the odds match what actually happened, but no model can tell for sure which couples will last. <a href="https://willwelast.app/methodology#accuracy">See how we checked</a>.</p>
         <div class="share" id="share"><button type="button" id="share-btn">Share your result</button><button type="button" id="pic-btn">Share as a picture</button><span id="share-msg" role="status"></span></div>
         <p class="donate"><span>Will We Last is free, with no ads. If it helped you, please consider a small donation.</span><a href="https://ko-fi.com/willwelast" target="_blank" rel="noopener">Donate on Ko-fi</a></p>
+        <div class="fb" id="fb" hidden>
+          <div class="q" role="group" aria-label="Was this useful?"><span>Was this useful?</span><button type="button" data-v="yes" aria-pressed="false">Yes</button><button type="button" data-v="no" aria-pressed="false">Not really</button></div>
+          <div id="fb-more" hidden>
+            <label for="fb-text" id="fb-label">What would make it better?</label>
+            <textarea id="fb-text" rows="3" maxlength="1000"></textarea>
+            <p class="note">Optional. Please leave out names and contact details. We only receive this note, your Yes or Not really, and which tab you're on, never your answers or odds.</p>
+            <button type="button" id="fb-send">Send</button>
+          </div>
+          <p id="fb-msg" role="status"></p>
+        </div>
         <form class="followup" id="followup" hidden novalidate>
           <h3>Help us check our accuracy</h3>
           <p>Leave your email and we'll check in a few times: after 1, 3 and 5 years (and at 6 months if you're not married yet). Each check-in takes about 30 seconds: are you still together? Your answers help us improve the app, so everyone who uses it can make better-informed decisions about their relationship.</p>
@@ -760,7 +783,27 @@ document.getElementById("pic-btn").addEventListener("click", async () => {
 });
 // Follow-up opt-in: the only place answers ever leave the browser, and only after the person ticks consent.
 // Shown only where the site's own storage is connected (never in previews or saved copies).
-if (location.protocol.startsWith("http")) fetch("/api/status").then(r => r.ok ? r.json() : {}).then(d => { if (d.followup) { document.getElementById("followup").hidden = false; document.getElementById("fu-plug").hidden = false; } }).catch(() => {});
+if (location.protocol.startsWith("http")) fetch("/api/status").then(r => r.ok ? r.json() : {}).then(d => { if (d.followup) { document.getElementById("fb").hidden = false; document.getElementById("followup").hidden = false; document.getElementById("fu-plug").hidden = false; } }).catch(() => {});
+// "Was this useful?": one tap is recorded straight away; the note is optional and added to the same entry.
+{
+  let k = null;
+  const fb = document.getElementById("fb"), msg = document.getElementById("fb-msg"), more = document.getElementById("fb-more"), text = document.getElementById("fb-text");
+  const post = body => fetch("/api/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json());
+  for (const b of fb.querySelectorAll(".q button")) b.addEventListener("click", async () => {
+    if (k) return;
+    for (const o of fb.querySelectorAll(".q button")) { o.setAttribute("aria-pressed", String(o === b)); o.disabled = true; }
+    document.getElementById("fb-label").textContent = b.dataset.v === "yes" ? "Thanks! What would make it better?" : "Sorry to hear that. What was missing or confusing?";
+    more.hidden = false; msg.textContent = "";
+    try { const d = await post({ useful: b.dataset.v, stage: mode }); if (d.ok) k = d.k; else throw 0; }
+    catch (e) { more.hidden = true; msg.textContent = "Sorry, that didn't save. Please try again later."; for (const o of fb.querySelectorAll(".q button")) o.disabled = false; }
+  });
+  document.getElementById("fb-send").addEventListener("click", async () => {
+    const note = text.value.trim(); if (!note || !k) return;
+    const btn = document.getElementById("fb-send"); btn.disabled = true;
+    try { const d = await post({ k, note }); if (!d.ok) throw 0; more.hidden = true; msg.textContent = "Thank you, that helps us improve Will We Last."; }
+    catch (e) { btn.disabled = false; msg.textContent = "Sorry, that didn't save. Please try again."; }
+  });
+}
 document.getElementById("followup").addEventListener("submit", async e => {
   e.preventDefault();
   const email = document.getElementById("fu-email").value.trim(), msg = document.getElementById("fu-msg"), btn = document.getElementById("fu-btn");
